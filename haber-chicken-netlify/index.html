@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Haber Chicken - Menu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+        }
+        /* Custom theme colors based on the logo */
+        .bg-haber-red { background-color: #d9232d; }
+        .text-haber-red { color: #d9232d; }
+        .border-haber-red { border-color: #d9232d; }
+        .bg-haber-yellow { background-color: #fbbd08; }
+        .text-haber-yellow { color: #fbbd08; }
+        .border-haber-yellow { border-color: #fbbd08; }
+
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 40;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 50;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .cart-item-enter {
+            animation: slide-in 0.3s ease-out forwards;
+        }
+        @keyframes slide-in {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        /* Style for the admin dashboard scrollbar */
+        .admin-dashboard-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        .admin-dashboard-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .admin-dashboard-content::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 10px;
+        }
+        .admin-dashboard-content::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+    </style>
+</head>
+<body class="antialiased text-gray-800">
+
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-30">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-3">
+                <!-- Logo now acts as admin login trigger -->
+                <div id="logo-container" class="flex items-center space-x-3 cursor-pointer" title="Admin Login">
+                     <div class="w-24 h-auto">
+                        <img src="haberchickenlogo.jpg" alt="Haber Chicken Logo" class="w-full h-auto">
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="cart-button" class="relative">
+                        <i class="fas fa-shopping-cart text-3xl text-gray-700 hover:text-haber-red transition-colors"></i>
+                        <span id="cart-count" class="absolute -top-2 -right-3 bg-haber-red text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center border-2 border-white">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Special Offers Section -->
+        <section id="special-offers-section" class="mb-12">
+            <h2 class="text-3xl font-bold mb-6 text-haber-red border-b-4 border-haber-yellow pb-2">Special Offers</h2>
+            <div id="special-offers-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Special offers will be dynamically inserted here -->
+            </div>
+        </section>
+
+        <!-- Menu Section -->
+        <section id="menu-section">
+            <h2 class="text-3xl font-bold mb-6 text-gray-800 border-b-2 border-gray-300 pb-2">Our Menu</h2>
+            <div id="menu-container" class="space-y-10">
+                <!-- Menu categories and items will be dynamically inserted here -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Shopping Cart Sidebar -->
+    <div id="cart-sidebar" class="fixed top-0 right-0 h-full w-full sm:w-96 bg-white shadow-lg transform translate-x-full transition-transform duration-300 ease-in-out z-40 flex flex-col">
+        <div class="flex justify-between items-center p-4 border-b bg-gray-50">
+            <h3 class="text-xl font-bold text-haber-red">Your Order</h3>
+            <button id="close-cart-button" class="text-gray-600 hover:text-gray-900">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+        </div>
+        <div id="cart-items" class="flex-grow p-4 overflow-y-auto">
+             <p id="empty-cart-message" class="text-gray-500 text-center mt-8">Your cart is empty.</p>
+        </div>
+        <div class="p-4 border-t bg-gray-50">
+            <div class="flex justify-between items-center font-bold text-lg mb-4">
+                <span>Total:</span>
+                <span id="cart-total">$0.00</span>
+            </div>
+            <button id="checkout-button" class="w-full bg-haber-red text-white py-3 rounded-lg font-bold hover:bg-red-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center space-x-2">
+                <i class="fab fa-whatsapp"></i>
+                <span>Proceed to Checkout</span>
+            </button>
+        </div>
+    </div>
+    <div id="cart-backdrop" class="hidden fixed inset-0 bg-black bg-opacity-60 z-30"></div>
+
+
+    <!-- Modals -->
+    <div id="modal-backdrop" class="modal-backdrop"></div>
+
+    <!-- Admin Login Modal -->
+    <div id="admin-login-modal" class="modal w-full max-w-sm bg-white p-6 rounded-lg shadow-xl">
+        <h3 class="text-xl font-bold mb-4 text-center text-haber-red">Admin Access</h3>
+        <input type="password" id="admin-password" placeholder="Enter password" class="w-full border border-gray-300 p-3 rounded-lg mb-4 text-center">
+        <div class="flex justify-end space-x-2">
+            <button id="cancel-login-button" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">Cancel</button>
+            <button id="submit-login-button" class="px-4 py-2 bg-haber-red text-white rounded-lg hover:bg-red-700">Login</button>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard Modal (Revamped UI) -->
+    <div id="admin-dashboard-modal" class="modal w-full max-w-6xl bg-gray-100 rounded-lg shadow-2xl h-[90vh] flex flex-col overflow-hidden">
+        <header class="flex justify-between items-center p-4 bg-white border-b-2 border-gray-200">
+            <h3 class="text-2xl font-bold text-haber-red flex items-center"><i class="fas fa-tools mr-3"></i>Admin Dashboard</h3>
+            <button id="close-dashboard-button" class="text-gray-500 hover:text-red-600 text-3xl">&times;</button>
+        </header>
+        <main class="flex-grow p-4 md:p-6 overflow-y-auto admin-dashboard-content grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Left Column: Menu Management -->
+            <div class="bg-white p-5 rounded-xl shadow-md flex flex-col">
+                <h4 class="text-xl font-bold mb-4 text-gray-700 border-b pb-2 flex items-center"><i class="fas fa-utensils mr-3 text-haber-yellow"></i>Manage Menu</h4>
+                
+                <div class="mb-4 pb-4 border-b">
+                    <h5 class="font-bold mb-2 text-gray-600 flex items-center"><i class="fas fa-folder-open mr-2 text-haber-yellow"></i>Manage Categories</h5>
+                    <p class="text-xs text-gray-500 mb-3">To add a category, create an item and type a new category name. To delete, click the trash icon.</p>
+                    <div id="admin-categories-list" class="space-y-2">
+                        <!-- Categories will be rendered here by JS -->
+                    </div>
+                </div>
+
+                <div id="admin-menu-items" class="space-y-2 mb-4 flex-grow overflow-y-auto pr-2"></div>
+                <div class="mt-4 pt-4 border-t">
+                    <h5 class="font-bold mb-3 text-gray-600">Add / Edit Item</h5>
+                    <form id="item-form" class="space-y-3">
+                        <input type="hidden" id="item-id">
+                        <input type="text" id="item-name" placeholder="Item Name" class="w-full p-2 border rounded-md" required>
+                        <div class="grid grid-cols-2 gap-3">
+                            <input type="number" id="item-price" placeholder="Price" step="0.01" class="w-full p-2 border rounded-md" required>
+                            <input type="text" id="item-category" placeholder="Category" class="w-full p-2 border rounded-md" required>
+                        </div>
+                        <textarea id="item-description" placeholder="Description (optional)" rows="2" class="w-full p-2 border rounded-md"></textarea>
+                        <div class="flex justify-end space-x-2">
+                            <button type="button" id="clear-form-button" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 font-semibold">Clear</button>
+                            <button type="submit" class="px-4 py-2 bg-haber-red text-white rounded-lg hover:bg-red-700 font-semibold flex items-center space-x-2"><i class="fas fa-save"></i><span>Save Item</span></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <!-- Right Column: Special Offers -->
+            <div class="bg-white p-5 rounded-xl shadow-md flex flex-col">
+                <h4 class="text-xl font-bold mb-4 text-gray-700 border-b pb-2 flex items-center"><i class="fas fa-star mr-3 text-haber-yellow"></i>Manage Special Offers</h4>
+                <div id="admin-special-offers" class="space-y-2 mb-4 flex-grow overflow-y-auto pr-2"></div>
+                <div class="mt-4 pt-4 border-t">
+                    <h5 class="font-bold mb-3 text-gray-600">Create New Offer</h5>
+                    <form id="offer-form" class="space-y-3">
+                        <select id="offer-item-select" class="w-full p-2 border rounded-md" required></select>
+                        <input type="number" id="offer-price" placeholder="Special Price" step="0.01" class="w-full p-2 border rounded-md" required>
+                        <div class="flex justify-end">
+                            <button type="submit" class="w-full px-4 py-2 bg-haber-yellow text-gray-800 font-semibold rounded-lg hover:bg-amber-400 transition-colors flex items-center justify-center space-x-2"><i class="fas fa-plus-circle"></i><span>Add to Offers</span></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Checkout Modal -->
+    <div id="checkout-modal" class="modal w-full max-w-md bg-white p-6 rounded-lg shadow-xl">
+        <h3 class="text-xl font-bold mb-4">Checkout Details</h3>
+        <!-- UPDATED TEXT -->
+        <p class="text-sm text-gray-600 mb-4">Your order will be sent directly to the shop via WhatsApp.</p>
+        <form id="checkout-form">
+            <div class="space-y-4">
+                <input type="text" id="customer-name" placeholder="Full Name" class="w-full border border-gray-300 p-2 rounded-lg" required>
+                <input type="tel" id="customer-phone" placeholder="Phone Number (e.g., 70123456)" class="w-full border border-gray-300 p-2 rounded-lg" required>
+                <input type="text" id="customer-location" placeholder="Location / Address" class="w-full border border-gray-300 p-2 rounded-lg" required>
+            </div>
+            <div class="flex justify-end space-x-2 mt-6">
+                <button type="button" id="cancel-checkout-button" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">Cancel</button>
+                <button type="submit" id="confirm-order-button" class="px-4 py-2 bg-haber-red text-white rounded-lg hover:bg-red-700 flex items-center">
+                    <span id="confirm-order-text">Confirm Order</span>
+                    <i id="confirm-order-spinner" class="fas fa-spinner fa-spin ml-2 hidden"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Custom Alert Modal -->
+    <div id="alert-modal" class="modal w-full max-w-sm bg-white p-6 rounded-lg shadow-xl text-center">
+        <p id="alert-message" class="mb-4 text-lg"></p>
+        <button id="alert-ok-button" class="px-6 py-2 bg-haber-red text-white rounded-lg hover:bg-red-700">OK</button>
+    </div>
+
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- DOM ELEMENTS ---
+        const menuContainer = document.getElementById('menu-container');
+        const specialOffersContainer = document.getElementById('special-offers-container');
+        const cartButton = document.getElementById('cart-button');
+        const cartSidebar = document.getElementById('cart-sidebar');
+        const closeCartButton = document.getElementById('close-cart-button');
+        const cartBackdrop = document.getElementById('cart-backdrop');
+        const cartCount = document.getElementById('cart-count');
+        const cartItemsContainer = document.getElementById('cart-items');
+        const cartTotalEl = document.getElementById('cart-total');
+        const emptyCartMessage = document.getElementById('empty-cart-message');
+        const checkoutButton = document.getElementById('checkout-button');
+        
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        const logoContainer = document.getElementById('logo-container');
+        const adminLoginModal = document.getElementById('admin-login-modal');
+        const cancelLoginButton = document.getElementById('cancel-login-button');
+        const submitLoginButton = document.getElementById('submit-login-button');
+        const adminPasswordInput = document.getElementById('admin-password');
+        
+        const adminDashboardModal = document.getElementById('admin-dashboard-modal');
+        const closeDashboardButton = document.getElementById('close-dashboard-button');
+        
+        const adminCategoriesList = document.getElementById('admin-categories-list');
+        
+        const adminMenuItemsContainer = document.getElementById('admin-menu-items');
+        const itemForm = document.getElementById('item-form');
+        const itemIdInput = document.getElementById('item-id');
+        const itemNameInput = document.getElementById('item-name');
+        const itemPriceInput = document.getElementById('item-price');
+        const itemCategoryInput = document.getElementById('item-category');
+        const itemDescriptionInput = document.getElementById('item-description');
+        const clearFormButton = document.getElementById('clear-form-button');
+        
+        const adminSpecialOffersContainer = document.getElementById('admin-special-offers');
+        const offerForm = document.getElementById('offer-form');
+        const offerItemSelect = document.getElementById('offer-item-select');
+        const offerPriceInput = document.getElementById('offer-price');
+
+        const checkoutModal = document.getElementById('checkout-modal');
+        const cancelCheckoutButton = document.getElementById('cancel-checkout-button');
+        const checkoutForm = document.getElementById('checkout-form');
+        const customerNameInput = document.getElementById('customer-name');
+        const customerPhoneInput = document.getElementById('customer-phone');
+        const customerLocationInput = document.getElementById('customer-location');
+        const confirmOrderButton = document.getElementById('confirm-order-button');
+        const confirmOrderText = document.getElementById('confirm-order-text');
+        const confirmOrderSpinner = document.getElementById('confirm-order-spinner');
+
+        const alertModal = document.getElementById('alert-modal');
+        const alertMessage = document.getElementById('alert-message');
+        const alertOkButton = document.getElementById('alert-ok-button');
+
+        // --- STATE & DATA ---
+        const SHOP_WHATSAPP_NUMBER = '96181495030';
+        let menuData = [
+            { id: 1, name: 'Whole Grilled Chicken', price: 15.00, category: 'Chicken Platters', description: 'Served with fries, garlic paste, and pickles.' },
+            { id: 2, name: 'Half Grilled Chicken', price: 8.00, category: 'Chicken Platters', description: 'Served with fries, garlic paste, and pickles.' },
+            { id: 3, name: 'Chicken Shawarma Platter', price: 10.00, category: 'Chicken Platters', description: 'Generous portion of chicken shawarma with sides.' },
+            { id: 4, name: 'Chicken Sandwich', price: 5.00, category: 'Sandwiches', description: 'Grilled chicken strips in fresh pita bread.' },
+            { id: 5, name: 'Tawook Sandwich', price: 6.00, category: 'Sandwiches', description: 'Marinated chicken breast cubes, grilled to perfection.' },
+            { id: 6, name: 'French Fries', price: 3.00, category: 'Sides', description: 'Crispy golden fries.' },
+            { id: 7, name: 'Hummus', price: 4.00, category: 'Sides', description: 'Creamy chickpea dip.' },
+            { id: 8, name: 'Soft Drink', price: 1.50, category: 'Beverages', description: 'Coke, Pepsi, 7up.' },
+            { id: 9, name: 'Fresh Juice', price: 3.50, category: 'Beverages', description: 'Orange or Carrot.' },
+        ];
+        let specialOffers = [];
+        let cart = [];
+
+        // --- FUNCTIONS ---
+
+        const openModal = (modal) => {
+            modalBackdrop.style.display = 'block';
+            modal.style.display = 'block';
+        };
+        const closeModal = (modal) => {
+            modalBackdrop.style.display = 'none';
+            modal.style.display = 'none';
+        };
+        const showAlert = (message) => {
+            alertMessage.textContent = message;
+            openModal(alertModal);
+        }
+
+        const renderMenu = () => {
+            const categories = [...new Set(menuData.map(item => item.category))];
+            menuContainer.innerHTML = categories.length > 0 ? categories.map(category => `
+                <div id="category-${category.replace(/\s+/g, '-')}">
+                    <h3 class="text-2xl font-bold mb-4 text-gray-700">${category}</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        ${menuData.filter(item => item.category === category).map(item => `
+                            <div class="bg-white rounded-lg shadow-md overflow-hidden transform hover:scale-105 transition-transform duration-300 flex flex-col">
+                                <div class="p-6 flex-grow">
+                                    <h4 class="text-xl font-semibold mb-2">${item.name}</h4>
+                                    <p class="text-gray-600 mb-4 text-sm">${item.description || ''}</p>
+                                </div>
+                                <div class="p-6 bg-gray-50 flex justify-between items-center">
+                                    <span class="text-lg font-bold text-gray-800">$${item.price.toFixed(2)}</span>
+                                    <button data-id="${item.id}" class="add-to-cart-btn bg-haber-red text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition-colors">Add</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('') : '<p class="text-center text-gray-500">The menu is currently empty. The owner is updating it!</p>';
+        };
+
+        const renderSpecialOffers = () => {
+            if (specialOffers.length === 0) {
+                specialOffersContainer.innerHTML = '<p class="text-gray-500 md:col-span-2 lg:col-span-3">No special offers at the moment. Check back soon!</p>';
+                return;
+            }
+            specialOffersContainer.innerHTML = specialOffers.map(offer => {
+                const originalItem = menuData.find(item => item.id === offer.id);
+                if (!originalItem) return '';
+                return `
+                    <div class="bg-white border-2 border-haber-yellow rounded-lg shadow-lg overflow-hidden transform hover:scale-105 transition-transform duration-300 flex flex-col">
+                        <div class="p-6 flex-grow">
+                            <h4 class="text-xl font-bold text-haber-red mb-2">${originalItem.name}</h4>
+                            <p class="text-gray-600 mb-4 text-sm">${originalItem.description || ''}</p>
+                        </div>
+                        <div class="p-6 bg-yellow-50 flex justify-between items-center">
+                            <div>
+                                <span class="text-lg font-bold text-haber-red mr-2">$${offer.specialPrice.toFixed(2)}</span>
+                                <span class="text-sm text-gray-500 line-through">$${originalItem.price.toFixed(2)}</span>
+                            </div>
+                            <button data-id="${originalItem.id}" data-price="${offer.specialPrice}" class="add-to-cart-btn bg-haber-yellow text-gray-800 px-4 py-2 rounded-lg font-bold hover:bg-amber-400 transition-colors">Add</button>
+                        </div>
+                    </div>
+                `
+            }).join('');
+        };
+
+        const renderCart = () => {
+            cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+            checkoutButton.disabled = cart.length === 0;
+
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = '';
+                emptyCartMessage.style.display = 'block';
+            } else {
+                emptyCartMessage.style.display = 'none';
+                cartItemsContainer.innerHTML = cart.map(cartItem => {
+                    const menuItem = menuData.find(item => item.id === cartItem.id);
+                    const offer = specialOffers.find(o => o.id === cartItem.id);
+                    const price = offer ? offer.specialPrice : menuItem.price;
+                    return `
+                        <div class="flex items-center justify-between py-3 border-b cart-item-enter">
+                            <div>
+                                <p class="font-semibold">${menuItem.name}</p>
+                                <p class="text-sm text-gray-500">$${price.toFixed(2)}</p>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <button class="cart-quantity-btn p-1 rounded-full w-6 h-6 flex items-center justify-center bg-gray-200 hover:bg-gray-300" data-id="${cartItem.id}" data-change="-1">-</button>
+                                <span>${cartItem.quantity}</span>
+                                <button class="cart-quantity-btn p-1 rounded-full w-6 h-6 flex items-center justify-center bg-gray-200 hover:bg-gray-300" data-id="${cartItem.id}" data-change="1">+</button>
+                                <button class="remove-from-cart-btn text-red-500 hover:text-red-700" data-id="${cartItem.id}"><i class="fas fa-trash-alt"></i></button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            const total = cart.reduce((sum, cartItem) => {
+                const menuItem = menuData.find(item => item.id === cartItem.id);
+                const offer = specialOffers.find(o => o.id === cartItem.id);
+                const price = offer ? offer.specialPrice : menuItem.price;
+                return sum + (price * cartItem.quantity);
+            }, 0);
+            cartTotalEl.textContent = `$${total.toFixed(2)}`;
+        };
+
+        const addToCart = (itemId, price = null) => {
+            const existingItem = cart.find(item => item.id === itemId);
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                cart.push({ id: itemId, quantity: 1 });
+            }
+            renderCart();
+        };
+
+        const updateCartQuantity = (itemId, change) => {
+            const cartItem = cart.find(item => item.id === itemId);
+            if (cartItem) {
+                cartItem.quantity += change;
+                if (cartItem.quantity <= 0) {
+                    cart = cart.filter(item => item.id !== itemId);
+                }
+            }
+            renderCart();
+        };
+
+        const removeFromCart = (itemId) => {
+            cart = cart.filter(item => item.id !== itemId);
+            renderCart();
+        };
+
+        const renderAdminCategories = () => {
+            const categories = [...new Set(menuData.map(item => item.category))];
+            adminCategoriesList.innerHTML = categories.map(cat => `
+                <div class="flex justify-between items-center p-2 rounded-lg bg-gray-50 hover:bg-gray-100">
+                    <span class="font-semibold text-gray-700">${cat}</span>
+                    <button class="delete-category-btn text-red-500 hover:text-red-700 p-2 rounded-md bg-red-100 hover:bg-red-200" data-category="${cat}" title="Delete Category">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+        };
+
+        const renderAdminMenuItems = () => {
+            adminMenuItemsContainer.innerHTML = menuData.map(item => `
+                <div class="flex justify-between items-center p-2 border rounded-lg bg-gray-50 hover:bg-gray-100">
+                    <div>
+                        <p class="font-semibold">${item.name} <span class="text-sm text-gray-500">(${item.category})</span></p>
+                        <p class="text-sm text-green-600 font-bold">$${item.price.toFixed(2)}</p>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button class="edit-item-btn text-blue-500 hover:text-blue-700 p-2 rounded-md bg-blue-100 hover:bg-blue-200" data-id="${item.id}" title="Edit"><i class="fas fa-edit"></i></button>
+                        <button class="delete-item-btn text-red-500 hover:text-red-700 p-2 rounded-md bg-red-100 hover:bg-red-200" data-id="${item.id}" title="Delete"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        const renderAdminSpecialOffers = () => {
+            adminSpecialOffersContainer.innerHTML = specialOffers.length === 0 
+            ? '<p class="text-center text-gray-500 p-4">No active offers.</p>'
+            : specialOffers.map(offer => {
+                 const originalItem = menuData.find(item => item.id === offer.id);
+                 if (!originalItem) return '';
+                return `
+                <div class="flex justify-between items-center p-2 border border-haber-yellow rounded-lg bg-yellow-50 hover:bg-yellow-100">
+                    <div>
+                        <p class="font-semibold">${originalItem.name}</p>
+                        <p class="text-sm"><span class="font-bold text-haber-red">$${offer.specialPrice.toFixed(2)}</span> <span class="text-gray-500 line-through ml-1">$${originalItem.price.toFixed(2)}</span></p>
+                    </div>
+                    <button class="delete-offer-btn text-red-500 hover:text-red-700 p-2 rounded-md bg-red-100 hover:bg-red-200" data-id="${offer.id}" title="Remove Offer"><i class="fas fa-trash"></i></button>
+                </div>
+            `}).join('');
+        };
+        
+        const populateOfferSelect = () => {
+            offerItemSelect.innerHTML = '<option value="" disabled selected>Select an item to discount...</option>' + menuData.map(item => `<option value="${item.id}">${item.name}</option>`).join('');
+        };
+
+        const clearItemForm = () => {
+            itemForm.reset();
+            itemIdInput.value = '';
+        };
+
+        const saveMenuItem = (e) => {
+            e.preventDefault();
+            const id = itemIdInput.value ? parseInt(itemIdInput.value) : null;
+            const name = itemNameInput.value.trim();
+            const price = parseFloat(itemPriceInput.value);
+            const category = itemCategoryInput.value.trim();
+            const description = itemDescriptionInput.value.trim();
+
+            if (!name || !price || !category) {
+                showAlert('Please fill all required fields.');
+                return;
+            }
+
+            if (id) {
+                const itemIndex = menuData.findIndex(item => item.id === id);
+                menuData[itemIndex] = { id, name, price, category, description };
+            } else {
+                const newId = menuData.length > 0 ? Math.max(...menuData.map(i => i.id)) + 1 : 1;
+                menuData.push({ id: newId, name, price, category, description });
+            }
+            
+            clearItemForm();
+            refreshAll();
+        };
+        
+        const editItem = (id) => {
+            const item = menuData.find(i => i.id === id);
+            itemIdInput.value = item.id;
+            itemNameInput.value = item.name;
+            itemPriceInput.value = item.price;
+            itemCategoryInput.value = item.category;
+            itemDescriptionInput.value = item.description;
+            itemNameInput.focus();
+        };
+
+        const deleteItem = (id) => {
+            if (confirm('Are you sure you want to delete this item? This will also remove it from any special offers.')) {
+                menuData = menuData.filter(i => i.id !== id);
+                specialOffers = specialOffers.filter(o => o.id !== id);
+                refreshAll();
+            }
+        };
+        
+        const deleteCategory = (categoryName) => {
+            if (confirm(`Are you sure you want to delete the "${categoryName}" category? ALL items within it will be permanently removed.`)) {
+                const itemIdsToDelete = new Set(menuData.filter(item => item.category === categoryName).map(item => item.id));
+                menuData = menuData.filter(item => item.category !== categoryName);
+                specialOffers = specialOffers.filter(offer => !itemIdsToDelete.has(offer.id));
+                refreshAll();
+            }
+        };
+
+        const addSpecialOffer = (e) => {
+            e.preventDefault();
+            const itemId = parseInt(offerItemSelect.value);
+            const specialPrice = parseFloat(offerPriceInput.value);
+
+            if (!itemId || !specialPrice) {
+                showAlert('Please select an item and set a special price.');
+                return;
+            }
+            
+            if (specialOffers.some(o => o.id === itemId)) {
+                showAlert('This item is already in special offers. Remove it first to add a new price.');
+                return;
+            }
+
+            specialOffers.push({ id: itemId, specialPrice });
+            offerForm.reset();
+            refreshAll();
+        };
+        
+        const deleteOffer = (id) => {
+             specialOffers = specialOffers.filter(o => o.id !== id);
+             refreshAll();
+        };
+        
+        // --- NETLIFY WHATSAPP API CHECKOUT (SHOP ONLY) ---
+        const handleCheckout = async (e) => {
+            e.preventDefault();
+            const name = customerNameInput.value.trim();
+            const phone = customerPhoneInput.value.trim();
+            const location = customerLocationInput.value.trim();
+
+            if (!name || !phone || !location) {
+                showAlert('Please fill in all your details.');
+                return;
+            }
+
+            confirmOrderButton.disabled = true;
+            confirmOrderText.textContent = 'Sending...';
+            confirmOrderSpinner.classList.remove('hidden');
+
+            try {
+                let orderDetailsText = `*New Order from Haber Chicken*\n\n*Customer:* ${name}\n*Phone:* ${phone}\n*Location:* ${location}\n\n*Order Details:*\n`;
+                let total = 0;
+                cart.forEach(cartItem => {
+                    const menuItem = menuData.find(item => item.id === cartItem.id);
+                    const offer = specialOffers.find(o => o.id === cartItem.id);
+                    const price = offer ? offer.specialPrice : menuItem.price;
+                    total += price * cartItem.quantity;
+                    orderDetailsText += `- ${cartItem.quantity}x ${menuItem.name} ($${(price * cartItem.quantity).toFixed(2)})\n`;
+                });
+                orderDetailsText += `\n*Total: $${total.toFixed(2)}*`;
+
+                // The fetch URL points to our Netlify Function endpoint.
+                const response = await fetch('/.netlify/functions/send-whatsapp-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    // UPDATED: The payload no longer includes customer details for a message.
+                    body: JSON.stringify({
+                        shopPhone: SHOP_WHATSAPP_NUMBER,
+                        shopMessage: orderDetailsText
+                    }),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'An unknown server error occurred.');
+                }
+                
+                // UPDATED: The success message is simpler now.
+                showAlert('Your order has been sent successfully to the shop!');
+                
+                cart = [];
+                checkoutForm.reset();
+                renderCart();
+                closeModal(checkoutModal);
+                if (cartSidebar.classList.contains('translate-x-0')) {
+                    toggleCartSidebar();
+                }
+
+            } catch (error) {
+                console.error("Checkout Error:", error);
+                showAlert(`Failed to send order. Please try again or contact the shop directly. (Error: ${error.message})`);
+            } finally {
+                confirmOrderButton.disabled = false;
+                confirmOrderText.textContent = 'Confirm Order';
+                confirmOrderSpinner.classList.add('hidden');
+            }
+        };
+
+
+        const refreshAll = () => {
+            renderMenu();
+            renderSpecialOffers();
+            renderCart();
+            renderAdminCategories();
+            renderAdminMenuItems();
+            renderAdminSpecialOffers();
+            populateOfferSelect();
+        };
+
+        const toggleCartSidebar = () => {
+            cartSidebar.classList.toggle('translate-x-full');
+            cartBackdrop.classList.toggle('hidden');
+        };
+
+        // --- EVENT LISTENERS ---
+        cartButton.addEventListener('click', toggleCartSidebar);
+        closeCartButton.addEventListener('click', toggleCartSidebar);
+        cartBackdrop.addEventListener('click', toggleCartSidebar);
+        
+        document.body.addEventListener('click', (e) => {
+            const btn = e.target.closest('.add-to-cart-btn');
+            if (btn) {
+                const id = parseInt(btn.dataset.id);
+                const price = btn.dataset.price ? parseFloat(btn.dataset.price) : null;
+                addToCart(id, price);
+                btn.classList.add('animate-pulse');
+                setTimeout(() => btn.classList.remove('animate-pulse'), 500);
+            }
+        });
+        
+        cartItemsContainer.addEventListener('click', (e) => {
+            const quantityBtn = e.target.closest('.cart-quantity-btn');
+            const removeBtn = e.target.closest('.remove-from-cart-btn');
+            if (quantityBtn) {
+                const id = parseInt(quantityBtn.dataset.id);
+                const change = parseInt(quantityBtn.dataset.change);
+                updateCartQuantity(id, change);
+            }
+            if (removeBtn) {
+                const id = parseInt(removeBtn.dataset.id);
+                removeFromCart(id);
+            }
+        });
+        
+        logoContainer.addEventListener('click', () => openModal(adminLoginModal));
+        cancelLoginButton.addEventListener('click', () => closeModal(adminLoginModal));
+        submitLoginButton.addEventListener('click', () => {
+            if (adminPasswordInput.value === 'eliasrabih123') {
+                closeModal(adminLoginModal);
+                openModal(adminDashboardModal);
+                adminPasswordInput.value = '';
+            } else {
+                showAlert('Incorrect password.');
+            }
+        });
+        
+        closeDashboardButton.addEventListener('click', () => closeModal(adminDashboardModal));
+        itemForm.addEventListener('submit', saveMenuItem);
+        clearFormButton.addEventListener('click', clearItemForm);
+        
+        adminMenuItemsContainer.addEventListener('click', (e) => {
+            const editBtn = e.target.closest('.edit-item-btn');
+            const deleteBtn = e.target.closest('.delete-item-btn');
+            if (editBtn) {
+                editItem(parseInt(editBtn.dataset.id));
+            }
+            if (deleteBtn) {
+                deleteItem(parseInt(deleteBtn.dataset.id));
+            }
+        });
+
+        adminCategoriesList.addEventListener('click', (e) => {
+            const deleteBtn = e.target.closest('.delete-category-btn');
+            if (deleteBtn) {
+                const category = deleteBtn.dataset.category;
+                deleteCategory(category);
+            }
+        });
+        
+        offerForm.addEventListener('submit', addSpecialOffer);
+        adminSpecialOffersContainer.addEventListener('click', (e) => {
+             const deleteBtn = e.target.closest('.delete-offer-btn');
+             if(deleteBtn) {
+                 deleteOffer(parseInt(deleteBtn.dataset.id));
+             }
+        });
+
+        checkoutButton.addEventListener('click', () => {
+            if (cart.length > 0) {
+                openModal(checkoutModal);
+            }
+        });
+        cancelCheckoutButton.addEventListener('click', () => closeModal(checkoutModal));
+        checkoutForm.addEventListener('submit', handleCheckout);
+
+        alertOkButton.addEventListener('click', () => closeModal(alertModal));
+        
+        // --- INITIALIZATION ---
+        refreshAll();
+    });
+    </script>
+</body>
+</html>
