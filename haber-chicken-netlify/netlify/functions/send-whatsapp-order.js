@@ -1,11 +1,8 @@
 // Netlify Serverless Function: send-whatsapp-order.js
-// VERSION 3: HARDCODED FOR TESTING
-
 const axios = require('axios');
 
-// --- HARDCODED API KEY FOR TESTING ---
-// Replace "YOUR_API_KEY_HERE" with your actual CallMeBot API Key.
-const API_KEY = "2452142"; 
+// --- Your actual API KEY from CallMeBot ---
+const API_KEY = "2452142";  // Make sure this is correct and registered with your WhatsApp number
 
 exports.handler = async function(event, context) {
   if (event.httpMethod !== 'POST') {
@@ -15,14 +12,14 @@ exports.handler = async function(event, context) {
   try {
     const { shopPhone, shopMessage } = JSON.parse(event.body);
 
-    if (!API_KEY || API_KEY === "2452142") {
+    if (!API_KEY) {
        throw new Error("API Key is not set in the code.");
     }
 
     const encodedShopMessage = encodeURIComponent(shopMessage);
     const shopApiUrl = `https://api.callmebot.com/whatsapp.php?phone=${shopPhone}&text=${encodedShopMessage}&apikey=${API_KEY}`;
     
-    console.log("Sending message to shop with hardcoded key...");
+    console.log("Sending message to shop via CallMeBot API...");
     await axios.get(shopApiUrl);
 
     return {
