@@ -1,5 +1,5 @@
 // Netlify Serverless Function: send-whatsapp-order.js
-// VERSION: Vonage
+// VERSION: Vonage (Corrected with better logging)
 
 const { Vonage } = require('@vonage/server-sdk');
 
@@ -7,7 +7,8 @@ const { Vonage } = require('@vonage/server-sdk');
 const apiKey = '409a7451';         // <-- PASTE YOUR API KEY
 const apiSecret = 'I88oXZHKe3CnD1is';   // <-- PASTE YOUR API SECRET
 
-// This is the WhatsApp number provided by the Vonage Sandbox
+// --- IMPORTANT: REPLACE THIS WITH THE NUMBER FROM THE VONAGE SANDBOX ---
+// It's the number you send the WhatsApp message TO during setup.
 const vonageSandboxNumber = '14157386102'; // e.g., '14157386170'
 
 // Initialize the Vonage client
@@ -47,6 +48,12 @@ exports.handler = async function(event, context) {
   } catch (error) {
     // If any error occurs, log it and return a server error response
     console.error('Error sending Vonage message:', error.message);
+    
+    // ADDED: Log the detailed error response from Vonage if available
+    if (error.response && error.response.data) {
+        console.error('Vonage API Error Details:', JSON.stringify(error.response.data, null, 2));
+    }
+    
     return {
       statusCode: 500,
       body: JSON.stringify({ 
