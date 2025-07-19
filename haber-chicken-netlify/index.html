@@ -201,7 +201,7 @@
     <div id="checkout-modal" class="modal w-full max-w-md bg-white p-6 rounded-lg shadow-xl">
         <h3 class="text-xl font-bold mb-4">Checkout Details</h3>
         <!-- UPDATED TEXT -->
-        <p class="text-sm text-gray-600 mb-4">Your order will be sent directly to the shop via WhatsApp.</p>
+        <p class="text-sm text-gray-600 mb-4">Please provide your details. You will be redirected to WhatsApp to send the order.</p>
         <form id="checkout-form">
             <div class="space-y-4">
                 <input type="text" id="customer-name" placeholder="Full Name" class="w-full border border-gray-300 p-2 rounded-lg" required>
@@ -211,8 +211,7 @@
             <div class="flex justify-end space-x-2 mt-6">
                 <button type="button" id="cancel-checkout-button" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">Cancel</button>
                 <button type="submit" id="confirm-order-button" class="px-4 py-2 bg-haber-red text-white rounded-lg hover:bg-red-700 flex items-center">
-                    <span id="confirm-order-text">Confirm Order</span>
-                    <i id="confirm-order-spinner" class="fas fa-spinner fa-spin ml-2 hidden"></i>
+                    <span>Open WhatsApp</span>
                 </button>
             </div>
         </form>
@@ -273,8 +272,6 @@
         const customerPhoneInput = document.getElementById('customer-phone');
         const customerLocationInput = document.getElementById('customer-location');
         const confirmOrderButton = document.getElementById('confirm-order-button');
-        const confirmOrderText = document.getElementById('confirm-order-text');
-        const confirmOrderSpinner = document.getElementById('confirm-order-spinner');
 
         const alertModal = document.getElementById('alert-modal');
         const alertMessage = document.getElementById('alert-message');
@@ -555,8 +552,8 @@
              refreshAll();
         };
         
-        // --- NETLIFY WHATSAPP API CHECKOUT (SHOP ONLY) ---
-        const handleCheckout = async (e) => {
+        // --- *** NEW FOOLPROOF CHECKOUT METHOD *** ---
+        const handleCheckout = (e) => {
             e.preventDefault();
             const name = customerNameInput.value.trim();
             const phone = customerPhoneInput.value.trim();
@@ -567,56 +564,35 @@
                 return;
             }
 
-            confirmOrderButton.disabled = true;
-            confirmOrderText.textContent = 'Sending...';
-            confirmOrderSpinner.classList.remove('hidden');
+            // 1. Construct the order message
+            let orderDetailsText = `*New Order from Haber Chicken Website*\n\n*Customer:* ${name}\n*Phone:* ${phone}\n*Location:* ${location}\n\n*Order Details:*\n`;
+            let total = 0;
+            cart.forEach(cartItem => {
+                const menuItem = menuData.find(item => item.id === cartItem.id);
+                const offer = specialOffers.find(o => o.id === cartItem.id);
+                const price = offer ? offer.specialPrice : menuItem.price;
+                total += price * cartItem.quantity;
+                orderDetailsText += `- ${cartItem.quantity}x ${menuItem.name} ($${(price * cartItem.quantity).toFixed(2)})\n`;
+            });
+            orderDetailsText += `\n*Total: $${total.toFixed(2)}*`;
 
-            try {
-                let orderDetailsText = `*New Order from Haber Chicken*\n\n*Customer:* ${name}\n*Phone:* ${phone}\n*Location:* ${location}\n\n*Order Details:*\n`;
-                let total = 0;
-                cart.forEach(cartItem => {
-                    const menuItem = menuData.find(item => item.id === cartItem.id);
-                    const offer = specialOffers.find(o => o.id === cartItem.id);
-                    const price = offer ? offer.specialPrice : menuItem.price;
-                    total += price * cartItem.quantity;
-                    orderDetailsText += `- ${cartItem.quantity}x ${menuItem.name} ($${(price * cartItem.quantity).toFixed(2)})\n`;
-                });
-                orderDetailsText += `\n*Total: $${total.toFixed(2)}*`;
+            // 2. Encode the message for a URL
+            const encodedMessage = encodeURIComponent(orderDetailsText);
 
-                // The fetch URL points to our Netlify Function endpoint.
-                const response = await fetch('/.netlify/functions/send-whatsapp-order', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    // UPDATED: The payload no longer includes customer details for a message.
-                    body: JSON.stringify({
-                        shopPhone: SHOP_WHATSAPP_NUMBER,
-                        shopMessage: orderDetailsText
-                    }),
-                });
+            // 3. Create the WhatsApp link
+            const whatsappUrl = `https://wa.me/${SHOP_WHATSAPP_NUMBER}?text=${encodedMessage}`;
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || 'An unknown server error occurred.');
-                }
-                
-                // UPDATED: The success message is simpler now.
-                showAlert('Your order has been sent successfully to the shop!');
-                
-                cart = [];
-                checkoutForm.reset();
-                renderCart();
-                closeModal(checkoutModal);
-                if (cartSidebar.classList.contains('translate-x-0')) {
-                    toggleCartSidebar();
-                }
-
-            } catch (error) {
-                console.error("Checkout Error:", error);
-                showAlert(`Failed to send order. Please try again or contact the shop directly. (Error: ${error.message})`);
-            } finally {
-                confirmOrderButton.disabled = false;
-                confirmOrderText.textContent = 'Confirm Order';
-                confirmOrderSpinner.classList.add('hidden');
+            // 4. Open the link in a new tab. This will launch WhatsApp.
+            window.open(whatsappUrl, '_blank');
+            
+            // 5. Clean up the UI
+            showAlert('You will be redirected to WhatsApp. Please press send to confirm your order!');
+            cart = [];
+            checkoutForm.reset();
+            renderCart();
+            closeModal(checkoutModal);
+            if (cartSidebar.classList.contains('translate-x-0')) {
+                toggleCartSidebar();
             }
         };
 
