@@ -2,7 +2,6 @@
 // VERSION: Vonage
 
 const { Vonage } = require('@vonage/server-sdk');
-const { Text } = require('@vonage/messages');
 
 // --- PASTE YOUR CREDENTIALS FROM THE VONAGE API DASHBOARD HERE ---
 const apiKey = '409a7451';         // <-- PASTE YOUR API KEY
@@ -27,15 +26,14 @@ exports.handler = async function(event, context) {
     // Get the shop's phone number and the message from the request body
     const { shopPhone, shopMessage } = JSON.parse(event.body);
 
-    // Send the message using the Vonage Messages API
-    await vonage.messages.send(
-      new Text(
-        shopMessage,
-        shopPhone, // The 'to' number
-        vonageSandboxNumber, // The 'from' number provided by Vonage
-        'whatsapp'
-      )
-    );
+    // Send the message using the Vonage Messages API by passing a plain object
+    await vonage.messages.send({
+      channel: 'whatsapp',
+      message_type: 'text',
+      text: shopMessage,
+      to: shopPhone,
+      from: vonageSandboxNumber,
+    });
 
     // Return a success response
     return {
