@@ -1,11 +1,21 @@
 // Netlify Serverless Function: send-whatsapp-order.js
-// VERSION 4: CORRECTED LOGIC
+// VERSION: Vonage
 
-const axios = require('axios');
+const { Vonage } = require('@vonage/server-sdk');
+const { Text } = require('@vonage/messages');
 
-// --- HARDCODED API KEY FOR TESTING ---
-// This is the API key for the CallMeBot service.
-const API_KEY = "2452142"; 
+// --- PASTE YOUR CREDENTIALS FROM THE VONAGE API DASHBOARD HERE ---
+const apiKey = '409a7451';         // <-- PASTE YOUR API KEY
+const apiSecret = 'I88oXZHKe3CnD1is';   // <-- PASTE YOUR API SECRET
+
+// This is the WhatsApp number provided by the Vonage Sandbox
+const vonageSandboxNumber = '14157386102'; // e.g., '14157386170'
+
+// Initialize the Vonage client
+const vonage = new Vonage({
+  apiKey: apiKey,
+  apiSecret: apiSecret,
+});
 
 exports.handler = async function(event, context) {
   // Only allow POST requests
@@ -17,34 +27,33 @@ exports.handler = async function(event, context) {
     // Get the shop's phone number and the message from the request body
     const { shopPhone, shopMessage } = JSON.parse(event.body);
 
-    // Encode the message to be safely used in a URL
-    const encodedShopMessage = encodeURIComponent(shopMessage);
-    
-    // Construct the API URL for CallMeBot
-    const shopApiUrl = `https://api.callmebot.com/whatsapp.php?phone=${shopPhone}&text=${encodedShopMessage}&apikey=${API_KEY}`;
-    
-    console.log("Sending WhatsApp message to the shop...");
-    
-    // Make the GET request to the CallMeBot API
-    await axios.get(shopApiUrl);
+    // Send the message using the Vonage Messages API
+    await vonage.messages.send(
+      new Text(
+        shopMessage,
+        shopPhone, // The 'to' number
+        vonageSandboxNumber, // The 'from' number provided by Vonage
+        'whatsapp'
+      )
+    );
 
     // Return a success response
     return {
       statusCode: 200,
       body: JSON.stringify({ 
         success: true, 
-        message: 'WhatsApp message sent to shop successfully!' 
+        message: 'Order sent via Vonage successfully!' 
       })
     };
 
   } catch (error) {
     // If any error occurs, log it and return a server error response
-    console.error('Error sending WhatsApp message:', error.message);
+    console.error('Error sending Vonage message:', error.message);
     return {
       statusCode: 500,
       body: JSON.stringify({ 
         success: false, 
-        message: 'Failed to send WhatsApp message.' 
+        message: 'Failed to send order via Vonage.' 
       })
     };
   }
