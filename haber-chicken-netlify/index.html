@@ -12,11 +12,9 @@
             font-family: 'Inter', sans-serif;
             background-color: #f8f9fa;
         }
-        /* Prevents background scrolling when a modal is open */
         .body-no-scroll {
             overflow: hidden;
         }
-        /* Custom theme colors based on the logo */
         .bg-haber-red { background-color: #d9232d; }
         .text-haber-red { color: #d9232d; }
         .border-haber-red { border-color: #d9232d; }
@@ -39,7 +37,6 @@
             left: 50%;
             transform: translate(-50%, -50%);
             z-index: 50;
-            transition: opacity 0.3s ease, transform 0.3s ease;
         }
         .cart-item-enter {
             animation: slide-in 0.3s ease-out forwards;
@@ -47,21 +44,6 @@
         @keyframes slide-in {
             from { opacity: 0; transform: translateX(100%); }
             to { opacity: 1; transform: translateX(0); }
-        }
-        
-        /* GUARANTEED FIX: Custom scrollbar styles for the admin panel */
-        .admin-scroll-panel::-webkit-scrollbar {
-            width: 8px;
-        }
-        .admin-scroll-panel::-webkit-scrollbar-track {
-            background: #e5e7eb;
-        }
-        .admin-scroll-panel::-webkit-scrollbar-thumb {
-            background: #9ca3af;
-            border-radius: 10px;
-        }
-        .admin-scroll-panel::-webkit-scrollbar-thumb:hover {
-            background: #6b7280;
         }
     </style>
 </head>
@@ -132,71 +114,6 @@
             <button id="submit-login-button" class="px-4 py-2 bg-haber-red text-white rounded-lg hover:bg-red-700">Login</button>
         </div>
     </div>
-
-    <!-- DEFINITIVE FIX: ADMIN DASHBOARD -->
-    <div id="admin-dashboard-modal" class="modal w-full max-w-7xl bg-gray-100 rounded-lg shadow-2xl h-[90vh] flex flex-col" style="display: none;">
-        <header class="flex-shrink-0 flex justify-between items-center p-4 bg-white border-b-2 border-gray-200">
-            <h3 class="text-2xl font-bold text-haber-red flex items-center"><i class="fas fa-tools mr-3"></i>Admin Dashboard</h3>
-            <button id="close-dashboard-button" class="text-gray-500 hover:text-red-600 text-3xl">&times;</button>
-        </header>
-        
-        <div class="flex-grow p-4 md:p-6 flex flex-col lg:flex-row gap-6 min-h-0">
-            
-            <!-- Left Column: SCROLLABLE LISTS -->
-            <div class="w-full lg:w-2/3 bg-white p-5 rounded-xl shadow-md overflow-y-auto admin-scroll-panel">
-                
-                <section class="mb-6 pb-4 border-b">
-                    <h4 class="text-xl font-bold mb-3 text-gray-700 flex items-center"><i class="fas fa-folder-open mr-3 text-haber-yellow"></i>Manage Categories</h4>
-                    <p class="text-xs text-gray-500 mb-3">To add a category, create an item with a new category name. To delete a category and all its items, click the trash icon.</p>
-                    <div id="admin-categories-list" class="space-y-2"></div>
-                </section>
-
-                <section class="mb-6 pb-4 border-b">
-                     <h4 class="text-xl font-bold mb-3 text-gray-700 flex items-center"><i class="fas fa-star mr-3 text-haber-yellow"></i>Manage Special Offers</h4>
-                     <div id="admin-special-offers" class="space-y-2"></div>
-                </section>
-
-                <section>
-                    <h4 class="text-xl font-bold mb-3 text-gray-700 flex items-center"><i class="fas fa-utensils mr-3 text-haber-yellow"></i>Manage Menu Items</h4>
-                    <div id="admin-menu-items" class="space-y-2"></div>
-                </section>
-
-            </div>
-
-            <!-- Right Column: FORMS (Also scrollable on small screens) -->
-            <div class="w-full lg:w-1/3 bg-white p-5 rounded-xl shadow-md overflow-y-auto admin-scroll-panel">
-                <div class="flex flex-col space-y-8">
-                    <section>
-                        <h4 class="font-bold mb-3 text-gray-600 text-lg">Add / Edit Item</h4>
-                        <form id="item-form" class="space-y-3">
-                            <input type="hidden" id="item-id">
-                            <input type="text" id="item-name" placeholder="Item Name" class="w-full p-2 border rounded-md bg-gray-50" required>
-                            <div class="grid grid-cols-2 gap-3">
-                                <input type="number" id="item-price" placeholder="Price (L.L.)" step="1000" class="w-full p-2 border rounded-md bg-gray-50" required>
-                                <input type="text" id="item-category" placeholder="Category" class="w-full p-2 border rounded-md bg-gray-50" required>
-                            </div>
-                            <textarea id="item-description" placeholder="Description (optional)" rows="3" class="w-full p-2 border rounded-md bg-gray-50"></textarea>
-                            <div class="flex justify-end space-x-2">
-                                <button type="button" id="clear-form-button" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 font-semibold">Clear</button>
-                                <button type="submit" class="px-4 py-2 bg-haber-red text-white rounded-lg hover:bg-red-700 font-semibold flex items-center space-x-2"><i class="fas fa-save"></i><span>Save Item</span></button>
-                            </div>
-                        </form>
-                    </section>
-
-                    <section class="border-t pt-8">
-                        <h4 class="font-bold mb-3 text-gray-600 text-lg">Create New Offer</h4>
-                        <form id="offer-form" class="space-y-3">
-                            <select id="offer-item-select" class="w-full p-2 border rounded-md bg-gray-50" required></select>
-                            <input type="number" id="offer-price" placeholder="Special Price (L.L.)" step="1000" class="w-full p-2 border rounded-md bg-gray-50" required>
-                            <div class="flex justify-end">
-                                <button type="submit" class="w-full px-4 py-2 bg-haber-yellow text-gray-800 font-semibold rounded-lg hover:bg-amber-400 transition-colors flex items-center justify-center space-x-2"><i class="fas fa-plus-circle"></i><span>Add to Offers</span></button>
-                            </div>
-                        </form>
-                    </section>
-                </div>
-            </div>
-        </div>
-    </div>
     
     <!-- Checkout Modal -->
     <div id="checkout-modal" class="modal w-full max-w-md bg-white p-6 rounded-lg shadow-xl" style="display: none;">
@@ -223,16 +140,13 @@
         <button id="alert-ok-button" class="px-6 py-2 bg-haber-red text-white rounded-lg hover:bg-red-700">OK</button>
     </div>
 
-
     <script type="module">
-        // Import Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         document.addEventListener('DOMContentLoaded', async () => {
             
-            // --- DOM ELEMENTS ---
             const menuContainer = document.getElementById('menu-container');
             const specialOffersContainer = document.getElementById('special-offers-container');
             const cartButton = document.getElementById('cart-button');
@@ -251,25 +165,6 @@
             const cancelLoginButton = document.getElementById('cancel-login-button');
             const submitLoginButton = document.getElementById('submit-login-button');
             const adminPasswordInput = document.getElementById('admin-password');
-            
-            const adminDashboardModal = document.getElementById('admin-dashboard-modal');
-            const closeDashboardButton = document.getElementById('close-dashboard-button');
-            
-            const adminCategoriesList = document.getElementById('admin-categories-list');
-            
-            const adminMenuItemsContainer = document.getElementById('admin-menu-items');
-            const itemForm = document.getElementById('item-form');
-            const itemIdInput = document.getElementById('item-id');
-            const itemNameInput = document.getElementById('item-name');
-            const itemPriceInput = document.getElementById('item-price');
-            const itemCategoryInput = document.getElementById('item-category');
-            const itemDescriptionInput = document.getElementById('item-description');
-            const clearFormButton = document.getElementById('clear-form-button');
-            
-            const adminSpecialOffersContainer = document.getElementById('admin-special-offers');
-            const offerForm = document.getElementById('offer-form');
-            const offerItemSelect = document.getElementById('offer-item-select');
-            const offerPriceInput = document.getElementById('offer-price');
 
             const checkoutModal = document.getElementById('checkout-modal');
             const cancelCheckoutButton = document.getElementById('cancel-checkout-button');
@@ -282,7 +177,6 @@
             const alertMessage = document.getElementById('alert-message');
             const alertOkButton = document.getElementById('alert-ok-button');
 
-            // --- STATE & DATA ---
             const SHOP_WHATSAPP_NUMBER = '96181495030';
             const defaultMenuData = [
                 { id: 1, name: 'Whole Grilled Chicken', price: 750000, category: 'Chicken Platters', description: 'Served with fries, garlic paste, and pickles.' },
@@ -312,12 +206,8 @@
             let cart = [];
             let db, menuDocRef, offersDocRef;
 
-            // --- FUNCTIONS ---
-
             const formatCurrency = (price) => {
-                if (typeof price !== 'number') {
-                    price = 0;
-                }
+                if (typeof price !== 'number') price = 0;
                 return `${price.toLocaleString('en-US')} L.L.`;
             };
             
@@ -329,7 +219,9 @@
                         setDoc(menuDocRef, { items: defaultMenuData });
                         menuData = defaultMenuData;
                     }
-                    refreshAll();
+                    renderMenu();
+                    renderSpecialOffers();
+                    renderCart();
                 });
 
                 onSnapshot(offersDocRef, (doc) => {
@@ -339,15 +231,10 @@
                         setDoc(offersDocRef, { items: [] });
                         specialOffers = [];
                     }
-                    refreshAll();
+                    renderMenu();
+                    renderSpecialOffers();
+                    renderCart();
                 });
-            };
-
-            const loadLocalData = () => {
-                console.log("Loading local fallback data.");
-                menuData = defaultMenuData;
-                specialOffers = [];
-                refreshAll();
             };
 
             const openModal = (modal) => {
@@ -482,148 +369,6 @@
                 cart = cart.filter(item => item.id !== itemId);
                 renderCart();
             };
-
-            const renderAdminCategories = () => {
-                const categories = [...new Set(menuData.map(item => item.category))];
-                adminCategoriesList.innerHTML = categories.map(cat => `
-                    <div class="flex justify-between items-center p-2 rounded-lg bg-gray-50 hover:bg-gray-100">
-                        <span class="font-semibold text-gray-700">${cat}</span>
-                        <button class="delete-category-btn text-red-500 hover:text-red-700 p-2 rounded-md bg-red-100 hover:bg-red-200" data-category="${cat}" title="Delete Category">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                `).join('');
-            };
-
-            const renderAdminMenuItems = () => {
-                adminMenuItemsContainer.innerHTML = menuData.map(item => `
-                    <div class="flex justify-between items-center p-2 border rounded-lg bg-gray-50 hover:bg-gray-100">
-                        <div>
-                            <p class="font-semibold">${item.name} <span class="text-sm text-gray-500">(${item.category})</span></p>
-                            <p class="text-sm text-green-600 font-bold">${formatCurrency(item.price)}</p>
-                        </div>
-                        <div class="flex space-x-2">
-                            <button class="edit-item-btn text-blue-500 hover:text-blue-700 p-2 rounded-md bg-blue-100 hover:bg-blue-200" data-id="${item.id}" title="Edit"><i class="fas fa-edit"></i></button>
-                            <button class="delete-item-btn text-red-500 hover:text-red-700 p-2 rounded-md bg-red-100 hover:bg-red-200" data-id="${item.id}" title="Delete"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>
-                `).join('');
-            };
-
-            const renderAdminSpecialOffers = () => {
-                adminSpecialOffersContainer.innerHTML = specialOffers.length === 0 
-                ? '<p class="text-center text-gray-500 p-4">No active offers.</p>'
-                : specialOffers.map(offer => {
-                    const originalItem = menuData.find(item => item.id === offer.id);
-                    if (!originalItem) return '';
-                    return `
-                    <div class="flex justify-between items-center p-2 border border-haber-yellow rounded-lg bg-yellow-50 hover:bg-yellow-100">
-                        <div>
-                            <p class="font-semibold">${originalItem.name}</p>
-                            <p class="text-sm"><span class="font-bold text-haber-red">${formatCurrency(offer.specialPrice)}</span> <span class="text-gray-500 line-through ml-1">${formatCurrency(originalItem.price)}</span></p>
-                        </div>
-                        <button class="delete-offer-btn text-red-500 hover:text-red-700 p-2 rounded-md bg-red-100 hover:bg-red-200" data-id="${offer.id}" title="Remove Offer"><i class="fas fa-trash"></i></button>
-                    </div>
-                `}).join('');
-            };
-            
-            const populateOfferSelect = () => {
-                offerItemSelect.innerHTML = '<option value="" disabled selected>Select an item to discount...</option>' + menuData.map(item => `<option value="${item.id}">${item.name}</option>`).join('');
-            };
-
-            const clearItemForm = () => {
-                itemForm.reset();
-                itemIdInput.value = '';
-                document.querySelector('#item-form button[type="submit"] span').textContent = 'Save Item';
-            };
-
-            const saveMenuItem = async (e) => {
-                e.preventDefault();
-                if (!db) { showAlert("Database not connected. Changes will not be saved."); return; }
-                const id = itemIdInput.value ? parseInt(itemIdInput.value) : null;
-                const name = itemNameInput.value.trim();
-                const price = parseFloat(itemPriceInput.value);
-                const category = itemCategoryInput.value.trim();
-                const description = itemDescriptionInput.value.trim();
-
-                if (!name || isNaN(price) || !category) {
-                    showAlert('Please fill all required fields correctly.');
-                    return;
-                }
-
-                let updatedMenuData = [...menuData];
-                if (id) {
-                    const itemIndex = updatedMenuData.findIndex(item => item.id === id);
-                    if (itemIndex > -1) {
-                        updatedMenuData[itemIndex] = { ...updatedMenuData[itemIndex], name, price, category, description };
-                    }
-                } else {
-                    const newId = updatedMenuData.length > 0 ? Math.max(...updatedMenuData.map(i => i.id)) + 1 : 1;
-                    updatedMenuData.push({ id: newId, name, price, category, description });
-                }
-                
-                await setDoc(menuDocRef, { items: updatedMenuData });
-                clearItemForm();
-            };
-            
-            const editItem = (id) => {
-                const item = menuData.find(i => i.id === id);
-                itemIdInput.value = item.id;
-                itemNameInput.value = item.name;
-                itemPriceInput.value = item.price;
-                itemCategoryInput.value = item.category;
-                itemDescriptionInput.value = item.description || '';
-                document.querySelector('#item-form button[type="submit"] span').textContent = 'Update Item';
-                itemNameInput.focus();
-            };
-
-            const deleteItem = async (id) => {
-                if (!db) { showAlert("Database not connected. Changes will not be saved."); return; }
-                if (confirm('Are you sure you want to delete this item? This will also remove it from any special offers.')) {
-                    const updatedMenuData = menuData.filter(i => i.id !== id);
-                    const updatedSpecialOffers = specialOffers.filter(o => o.id !== id);
-                    await setDoc(menuDocRef, { items: updatedMenuData });
-                    await setDoc(offersDocRef, { items: updatedSpecialOffers });
-                }
-            };
-            
-            const deleteCategory = async (categoryName) => {
-                if (!db) { showAlert("Database not connected. Changes will not be saved."); return; }
-                if (confirm(`Are you sure you want to delete the "${categoryName}" category? ALL items within it will be permanently removed.`)) {
-                    const itemIdsToDelete = new Set(menuData.filter(item => item.category === categoryName).map(item => item.id));
-                    const updatedMenuData = menuData.filter(item => item.category !== categoryName);
-                    const updatedSpecialOffers = specialOffers.filter(offer => !itemIdsToDelete.has(offer.id));
-                    await setDoc(menuDocRef, { items: updatedMenuData });
-                    await setDoc(offersDocRef, { items: updatedSpecialOffers });
-                }
-            };
-
-            const addSpecialOffer = async (e) => {
-                e.preventDefault();
-                if (!db) { showAlert("Database not connected. Changes will not be saved."); return; }
-                const itemId = parseInt(offerItemSelect.value);
-                const specialPrice = parseFloat(offerPriceInput.value);
-
-                if (!itemId || isNaN(specialPrice)) {
-                    showAlert('Please select an item and set a valid special price.');
-                    return;
-                }
-                
-                if (specialOffers.some(o => o.id === itemId)) {
-                    showAlert('This item is already in special offers. Remove it first to add a new price.');
-                    return;
-                }
-
-                const updatedSpecialOffers = [...specialOffers, { id: itemId, specialPrice }];
-                await setDoc(offersDocRef, { items: updatedSpecialOffers });
-                offerForm.reset();
-            };
-            
-            const deleteOffer = async (id) => {
-                if (!db) { showAlert("Database not connected. Changes will not be saved."); return; }
-                const updatedSpecialOffers = specialOffers.filter(o => o.id !== id);
-                await setDoc(offersDocRef, { items: updatedSpecialOffers });
-            };
             
             const handleCheckout = (e) => {
                 e.preventDefault();
@@ -661,22 +406,10 @@
                 }
             };
 
-            const refreshAll = () => {
-                renderMenu();
-                renderSpecialOffers();
-                renderCart();
-                renderAdminCategories();
-                renderAdminMenuItems();
-                renderAdminSpecialOffers();
-                populateOfferSelect();
-            };
-
             const toggleCartSidebar = () => {
                 cartSidebar.classList.toggle('translate-x-full');
                 cartBackdrop.classList.toggle('hidden');
             };
-
-            // --- INITIALIZATION & EVENT LISTENERS ---
 
             try {
                 const firebaseConfig = {
@@ -706,10 +439,8 @@
             } catch (error) {
                 console.error("Firebase initialization failed:", error);
                 showAlert("Could not connect to the cloud database. Please check your Firebase setup (Anonymous Sign-in must be enabled). Displaying local data only.");
-                loadLocalData();
             }
 
-            // Attach all event listeners
             cartButton.addEventListener('click', toggleCartSidebar);
             closeCartButton.addEventListener('click', toggleCartSidebar);
             cartBackdrop.addEventListener('click', toggleCartSidebar);
@@ -747,46 +478,15 @@
             cancelLoginButton.addEventListener('click', () => closeModal(adminLoginModal));
             submitLoginButton.addEventListener('click', () => {
                 if (adminPasswordInput.value === 'eliasrabih123') {
-                    closeModal(adminLoginModal); 
-                    openModal(adminDashboardModal);
-                    adminPasswordInput.value = '';
+                    // Set a flag in session storage and redirect to the new admin page
+                    sessionStorage.setItem('isAdminLoggedIn', 'true');
+                    window.location.href = 'admin.html';
                 } else {
                     showAlert('Incorrect password.');
                     adminPasswordInput.value = '';
                 }
             });
             
-            closeDashboardButton.addEventListener('click', () => closeModal(adminDashboardModal));
-            itemForm.addEventListener('submit', saveMenuItem);
-            clearFormButton.addEventListener('click', clearItemForm);
-            
-            adminMenuItemsContainer.addEventListener('click', (e) => {
-                const editBtn = e.target.closest('.edit-item-btn');
-                const deleteBtn = e.target.closest('.delete-item-btn');
-                if (editBtn) {
-                    editItem(parseInt(editBtn.dataset.id));
-                }
-                if (deleteBtn) {
-                    deleteItem(parseInt(deleteBtn.dataset.id));
-                }
-            });
-
-            adminCategoriesList.addEventListener('click', (e) => {
-                const deleteBtn = e.target.closest('.delete-category-btn');
-                if (deleteBtn) {
-                    const category = deleteBtn.dataset.category;
-                    deleteCategory(category);
-                }
-            });
-            
-            offerForm.addEventListener('submit', addSpecialOffer);
-            adminSpecialOffersContainer.addEventListener('click', (e) => {
-                const deleteBtn = e.target.closest('.delete-offer-btn');
-                if(deleteBtn) {
-                    deleteOffer(parseInt(deleteBtn.dataset.id));
-                }
-            });
-
             checkoutButton.addEventListener('click', () => {
                 if (cart.length > 0) {
                     openModal(checkoutModal);
@@ -796,7 +496,6 @@
             checkoutForm.addEventListener('submit', handleCheckout);
 
             alertOkButton.addEventListener('click', () => closeModal(alertModal));
-            
         });
     </script>
 </body>
