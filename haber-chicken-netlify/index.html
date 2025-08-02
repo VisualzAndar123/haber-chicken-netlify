@@ -223,533 +223,575 @@
     </div>
 
 
-    <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // --- DOM ELEMENTS ---
-        const menuContainer = document.getElementById('menu-container');
-        const specialOffersContainer = document.getElementById('special-offers-container');
-        const cartButton = document.getElementById('cart-button');
-        const cartSidebar = document.getElementById('cart-sidebar');
-        const closeCartButton = document.getElementById('close-cart-button');
-        const cartBackdrop = document.getElementById('cart-backdrop');
-        const cartCount = document.getElementById('cart-count');
-        const cartItemsContainer = document.getElementById('cart-items');
-        const cartTotalEl = document.getElementById('cart-total');
-        const emptyCartMessage = document.getElementById('empty-cart-message');
-        const checkoutButton = document.getElementById('checkout-button');
-        
-        const modalBackdrop = document.getElementById('modal-backdrop');
-        const logoContainer = document.getElementById('logo-container');
-        const adminLoginModal = document.getElementById('admin-login-modal');
-        const cancelLoginButton = document.getElementById('cancel-login-button');
-        const submitLoginButton = document.getElementById('submit-login-button');
-        const adminPasswordInput = document.getElementById('admin-password');
-        
-        const adminDashboardModal = document.getElementById('admin-dashboard-modal');
-        const closeDashboardButton = document.getElementById('close-dashboard-button');
-        
-        const adminCategoriesList = document.getElementById('admin-categories-list');
-        
-        const adminMenuItemsContainer = document.getElementById('admin-menu-items');
-        const itemForm = document.getElementById('item-form');
-        const itemIdInput = document.getElementById('item-id');
-        const itemNameInput = document.getElementById('item-name');
-        const itemPriceInput = document.getElementById('item-price');
-        const itemCategoryInput = document.getElementById('item-category');
-        const itemDescriptionInput = document.getElementById('item-description');
-        const clearFormButton = document.getElementById('clear-form-button');
-        
-        const adminSpecialOffersContainer = document.getElementById('admin-special-offers');
-        const offerForm = document.getElementById('offer-form');
-        const offerItemSelect = document.getElementById('offer-item-select');
-        const offerPriceInput = document.getElementById('offer-price');
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const checkoutModal = document.getElementById('checkout-modal');
-        const cancelCheckoutButton = document.getElementById('cancel-checkout-button');
-        const checkoutForm = document.getElementById('checkout-form');
-        const customerNameInput = document.getElementById('customer-name');
-        const customerPhoneInput = document.getElementById('customer-phone');
-        const customerLocationInput = document.getElementById('customer-location');
-
-        const alertModal = document.getElementById('alert-modal');
-        const alertMessage = document.getElementById('alert-message');
-        const alertOkButton = document.getElementById('alert-ok-button');
-
-        // --- STATE & DATA ---
-        const SHOP_WHATSAPP_NUMBER = '96181495030';
-        const MENU_STORAGE_KEY = 'haberChickenMenuData';
-        const OFFERS_STORAGE_KEY = 'haberChickenOffersData';
-
-        // ** UPDATED: Added more items to demonstrate scrolling
-        const defaultMenuData = [
-            { id: 1, name: 'Whole Grilled Chicken', price: 750000, category: 'Chicken Platters', description: 'Served with fries, garlic paste, and pickles.' },
-            { id: 2, name: 'Half Grilled Chicken', price: 400000, category: 'Chicken Platters', description: 'Served with fries, garlic paste, and pickles.' },
-            { id: 3, name: 'Chicken Shawarma Platter', price: 500000, category: 'Chicken Platters', description: 'Generous portion of chicken shawarma with sides.' },
-            { id: 4, name: 'Chicken Sandwich', price: 250000, category: 'Sandwiches', description: 'Grilled chicken strips in fresh pita bread.' },
-            { id: 5, name: 'Tawook Sandwich', price: 300000, category: 'Sandwiches', description: 'Marinated chicken breast cubes, grilled to perfection.' },
-            { id: 6, name: 'French Fries', price: 150000, category: 'Sides', description: 'Crispy golden fries.' },
-            { id: 7, name: 'Hummus', price: 180000, category: 'Sides', description: 'Creamy chickpea dip.' },
-            { id: 8, name: 'Soft Drink', price: 75000, category: 'Beverages', description: 'Coke, Pepsi, 7up.' },
-            { id: 9, name: 'Fresh Juice', price: 150000, category: 'Beverages', description: 'Orange or Carrot.' },
-            { id: 10, name: 'Family Meal', price: 2500000, category: 'Family Meals', description: '2 whole chickens, large fries, large hummus, garlic, pickles & drinks.' },
-            { id: 11, name: 'Double Chicken Burger', price: 450000, category: 'Sandwiches', description: 'Two grilled chicken patties with special sauce.' },
-            { id: 12, name: 'Chicken Wings (6 pcs)', price: 350000, category: 'Sides', description: 'Spicy or BBQ chicken wings.' },
-            { id: 13, name: 'Coleslaw Salad', price: 120000, category: 'Sides', description: 'Freshly made coleslaw.' },
-            { id: 14, name: 'Garlic Bread (4 pcs)', price: 100000, category: 'Sides', description: 'Toasted bread with garlic butter.' },
-            { id: 15, name: 'Water', price: 50000, category: 'Beverages', description: 'Small bottle of mineral water.' },
-            { id: 16, name: 'Iced Tea', price: 90000, category: 'Beverages', description: 'Lemon or Peach flavor.' },
-            { id: 17, name: 'Extra Garlic Sauce', price: 30000, category: 'Extras', description: 'An extra serving of our famous garlic sauce.' },
-            { id: 18, name: 'Extra Pickles', price: 30000, category: 'Extras', description: 'An extra serving of mixed pickles.' },
-            { id: 19, name: 'Spicy Grilled Chicken', price: 800000, category: 'Chicken Platters', description: 'Whole chicken with a spicy marinade.' },
-            { id: 20, name: 'Tawook Platter', price: 600000, category: 'Chicken Platters', description: 'Skewers of marinated chicken breast with sides.' },
-        ];
-
-        let menuData = [];
-        let specialOffers = [];
-        let cart = [];
-
-        // --- FUNCTIONS ---
-
-        // Function to format numbers as L.L. currency
-        const formatCurrency = (price) => {
-            if (typeof price !== 'number') {
-                price = 0;
-            }
-            // Format number with commas and append currency
-            return `${price.toLocaleString('en-US')} L.L.`;
-        };
-        
-        // Functions to save and load data from localStorage
-        const saveData = () => {
-            localStorage.setItem(MENU_STORAGE_KEY, JSON.stringify(menuData));
-            localStorage.setItem(OFFERS_STORAGE_KEY, JSON.stringify(specialOffers));
-        };
-
-        const loadData = () => {
-            const storedMenu = localStorage.getItem(MENU_STORAGE_KEY);
-            const storedOffers = localStorage.getItem(OFFERS_STORAGE_KEY);
-
-            // If there's data in localStorage, use it. Otherwise, use the default data.
-            menuData = storedMenu ? JSON.parse(storedMenu) : defaultMenuData;
-            specialOffers = storedOffers ? JSON.parse(storedOffers) : [];
+        document.addEventListener('DOMContentLoaded', async () => {
             
-            // Save the default data if it's the first time loading the page
-            if (!storedMenu) {
-                saveData();
+            // --- DOM ELEMENTS ---
+            const menuContainer = document.getElementById('menu-container');
+            const specialOffersContainer = document.getElementById('special-offers-container');
+            const cartButton = document.getElementById('cart-button');
+            const cartSidebar = document.getElementById('cart-sidebar');
+            const closeCartButton = document.getElementById('close-cart-button');
+            const cartBackdrop = document.getElementById('cart-backdrop');
+            const cartCount = document.getElementById('cart-count');
+            const cartItemsContainer = document.getElementById('cart-items');
+            const cartTotalEl = document.getElementById('cart-total');
+            const emptyCartMessage = document.getElementById('empty-cart-message');
+            const checkoutButton = document.getElementById('checkout-button');
+            
+            const modalBackdrop = document.getElementById('modal-backdrop');
+            const logoContainer = document.getElementById('logo-container');
+            const adminLoginModal = document.getElementById('admin-login-modal');
+            const cancelLoginButton = document.getElementById('cancel-login-button');
+            const submitLoginButton = document.getElementById('submit-login-button');
+            const adminPasswordInput = document.getElementById('admin-password');
+            
+            const adminDashboardModal = document.getElementById('admin-dashboard-modal');
+            const closeDashboardButton = document.getElementById('close-dashboard-button');
+            
+            const adminCategoriesList = document.getElementById('admin-categories-list');
+            
+            const adminMenuItemsContainer = document.getElementById('admin-menu-items');
+            const itemForm = document.getElementById('item-form');
+            const itemIdInput = document.getElementById('item-id');
+            const itemNameInput = document.getElementById('item-name');
+            const itemPriceInput = document.getElementById('item-price');
+            const itemCategoryInput = document.getElementById('item-category');
+            const itemDescriptionInput = document.getElementById('item-description');
+            const clearFormButton = document.getElementById('clear-form-button');
+            
+            const adminSpecialOffersContainer = document.getElementById('admin-special-offers');
+            const offerForm = document.getElementById('offer-form');
+            const offerItemSelect = document.getElementById('offer-item-select');
+            const offerPriceInput = document.getElementById('offer-price');
+
+            const checkoutModal = document.getElementById('checkout-modal');
+            const cancelCheckoutButton = document.getElementById('cancel-checkout-button');
+            const checkoutForm = document.getElementById('checkout-form');
+            const customerNameInput = document.getElementById('customer-name');
+            const customerPhoneInput = document.getElementById('customer-phone');
+            const customerLocationInput = document.getElementById('customer-location');
+
+            const alertModal = document.getElementById('alert-modal');
+            const alertMessage = document.getElementById('alert-message');
+            const alertOkButton = document.getElementById('alert-ok-button');
+
+            // --- STATE & DATA ---
+            const SHOP_WHATSAPP_NUMBER = '96181495030';
+            const defaultMenuData = [
+                { id: 1, name: 'Whole Grilled Chicken', price: 750000, category: 'Chicken Platters', description: 'Served with fries, garlic paste, and pickles.' },
+                { id: 2, name: 'Half Grilled Chicken', price: 400000, category: 'Chicken Platters', description: 'Served with fries, garlic paste, and pickles.' },
+                { id: 3, name: 'Chicken Shawarma Platter', price: 500000, category: 'Chicken Platters', description: 'Generous portion of chicken shawarma with sides.' },
+                { id: 4, name: 'Chicken Sandwich', price: 250000, category: 'Sandwiches', description: 'Grilled chicken strips in fresh pita bread.' },
+                { id: 5, name: 'Tawook Sandwich', price: 300000, category: 'Sandwiches', description: 'Marinated chicken breast cubes, grilled to perfection.' },
+                { id: 6, name: 'French Fries', price: 150000, category: 'Sides', description: 'Crispy golden fries.' },
+                { id: 7, name: 'Hummus', price: 180000, category: 'Sides', description: 'Creamy chickpea dip.' },
+                { id: 8, name: 'Soft Drink', price: 75000, category: 'Beverages', description: 'Coke, Pepsi, 7up.' },
+                { id: 9, name: 'Fresh Juice', price: 150000, category: 'Beverages', description: 'Orange or Carrot.' },
+                { id: 10, name: 'Family Meal', price: 2500000, category: 'Family Meals', description: '2 whole chickens, large fries, large hummus, garlic, pickles & drinks.' },
+                { id: 11, name: 'Double Chicken Burger', price: 450000, category: 'Sandwiches', description: 'Two grilled chicken patties with special sauce.' },
+                { id: 12, name: 'Chicken Wings (6 pcs)', price: 350000, category: 'Sides', description: 'Spicy or BBQ chicken wings.' },
+                { id: 13, name: 'Coleslaw Salad', price: 120000, category: 'Sides', description: 'Freshly made coleslaw.' },
+                { id: 14, name: 'Garlic Bread (4 pcs)', price: 100000, category: 'Sides', description: 'Toasted bread with garlic butter.' },
+                { id: 15, name: 'Water', price: 50000, category: 'Beverages', description: 'Small bottle of mineral water.' },
+                { id: 16, name: 'Iced Tea', price: 90000, category: 'Beverages', description: 'Lemon or Peach flavor.' },
+                { id: 17, name: 'Extra Garlic Sauce', price: 30000, category: 'Extras', description: 'An extra serving of our famous garlic sauce.' },
+                { id: 18, name: 'Extra Pickles', price: 30000, category: 'Extras', description: 'An extra serving of mixed pickles.' },
+                { id: 19, name: 'Spicy Grilled Chicken', price: 800000, category: 'Chicken Platters', description: 'Whole chicken with a spicy marinade.' },
+                { id: 20, name: 'Tawook Platter', price: 600000, category: 'Chicken Platters', description: 'Skewers of marinated chicken breast with sides.' },
+            ];
+
+            let menuData = [];
+            let specialOffers = [];
+            let cart = [];
+            let db, menuDocRef, offersDocRef;
+
+            // --- FUNCTIONS ---
+
+            const formatCurrency = (price) => {
+                if (typeof price !== 'number') {
+                    price = 0;
+                }
+                return `${price.toLocaleString('en-US')} L.L.`;
+            };
+            
+            const loadDataFromFirestore = () => {
+                onSnapshot(menuDocRef, (doc) => {
+                    if (doc.exists()) {
+                        menuData = doc.data().items;
+                    } else {
+                        setDoc(menuDocRef, { items: defaultMenuData });
+                        menuData = defaultMenuData;
+                    }
+                    refreshAll();
+                });
+
+                onSnapshot(offersDocRef, (doc) => {
+                    if (doc.exists()) {
+                        specialOffers = doc.data().items;
+                    } else {
+                        setDoc(offersDocRef, { items: [] });
+                        specialOffers = [];
+                    }
+                    refreshAll();
+                });
+            };
+
+            const loadLocalData = () => {
+                console.log("Loading local fallback data.");
+                menuData = defaultMenuData;
+                specialOffers = [];
+                refreshAll();
+            };
+
+            const openModal = (modal) => {
+                modalBackdrop.style.display = 'block';
+                modal.style.display = 'block';
+            };
+            const closeModal = (modal) => {
+                modalBackdrop.style.display = 'none';
+                modal.style.display = 'none';
+            };
+            const showAlert = (message) => {
+                alertMessage.textContent = message;
+                openModal(alertModal);
             }
-        };
 
-        const openModal = (modal) => {
-            modalBackdrop.style.display = 'block';
-            modal.style.display = 'block';
-        };
-        const closeModal = (modal) => {
-            modalBackdrop.style.display = 'none';
-            modal.style.display = 'none';
-        };
-        const showAlert = (message) => {
-            alertMessage.textContent = message;
-            openModal(alertModal);
-        }
-
-        const renderMenu = () => {
-            const categories = [...new Set(menuData.map(item => item.category))];
-            menuContainer.innerHTML = categories.length > 0 ? categories.map(category => `
-                <div id="category-${category.replace(/\s+/g, '-')}">
-                    <h3 class="text-2xl font-bold mb-4 text-gray-700">${category}</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        ${menuData.filter(item => item.category === category).map(item => `
-                            <div class="bg-white rounded-lg shadow-md overflow-hidden transform hover:scale-105 transition-transform duration-300 flex flex-col">
-                                <div class="p-6 flex-grow">
-                                    <h4 class="text-xl font-semibold mb-2">${item.name}</h4>
-                                    <p class="text-gray-600 mb-4 text-sm">${item.description || ''}</p>
+            const renderMenu = () => {
+                const categories = [...new Set(menuData.map(item => item.category))];
+                menuContainer.innerHTML = categories.length > 0 ? categories.map(category => `
+                    <div id="category-${category.replace(/\s+/g, '-')}">
+                        <h3 class="text-2xl font-bold mb-4 text-gray-700">${category}</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            ${menuData.filter(item => item.category === category).map(item => `
+                                <div class="bg-white rounded-lg shadow-md overflow-hidden transform hover:scale-105 transition-transform duration-300 flex flex-col">
+                                    <div class="p-6 flex-grow">
+                                        <h4 class="text-xl font-semibold mb-2">${item.name}</h4>
+                                        <p class="text-gray-600 mb-4 text-sm">${item.description || ''}</p>
+                                    </div>
+                                    <div class="p-6 bg-gray-50 flex justify-between items-center">
+                                        <span class="text-lg font-bold text-gray-800">${formatCurrency(item.price)}</span>
+                                        <button data-id="${item.id}" class="add-to-cart-btn bg-haber-red text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition-colors">Add</button>
+                                    </div>
                                 </div>
-                                <div class="p-6 bg-gray-50 flex justify-between items-center">
-                                    <span class="text-lg font-bold text-gray-800">${formatCurrency(item.price)}</span>
-                                    <button data-id="${item.id}" class="add-to-cart-btn bg-haber-red text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition-colors">Add</button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `).join('') : '<p class="text-center text-gray-500">The menu is currently empty. The owner is updating it!</p>';
+            };
+
+            const renderSpecialOffers = () => {
+                if (specialOffers.length === 0) {
+                    specialOffersContainer.innerHTML = '<p class="text-gray-500 md:col-span-2 lg:col-span-3">No special offers at the moment. Check back soon!</p>';
+                    document.getElementById('special-offers-section').style.display = 'none';
+                    return;
+                }
+                document.getElementById('special-offers-section').style.display = 'block';
+                specialOffersContainer.innerHTML = specialOffers.map(offer => {
+                    const originalItem = menuData.find(item => item.id === offer.id);
+                    if (!originalItem) return '';
+                    return `
+                        <div class="bg-white border-2 border-haber-yellow rounded-lg shadow-lg overflow-hidden transform hover:scale-105 transition-transform duration-300 flex flex-col">
+                            <div class="p-6 flex-grow">
+                                <h4 class="text-xl font-bold text-haber-red mb-2">${originalItem.name}</h4>
+                                <p class="text-gray-600 mb-4 text-sm">${originalItem.description || ''}</p>
+                            </div>
+                            <div class="p-6 bg-yellow-50 flex justify-between items-center">
+                                <div>
+                                    <span class="text-lg font-bold text-haber-red mr-2">${formatCurrency(offer.specialPrice)}</span>
+                                    <span class="text-sm text-gray-500 line-through">${formatCurrency(originalItem.price)}</span>
+                                </div>
+                                <button data-id="${originalItem.id}" data-price="${offer.specialPrice}" class="add-to-cart-btn bg-haber-yellow text-gray-800 px-4 py-2 rounded-lg font-bold hover:bg-amber-400 transition-colors">Add</button>
+                            </div>
+                        </div>
+                    `
+                }).join('');
+            };
+
+            const renderCart = () => {
+                cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+                checkoutButton.disabled = cart.length === 0;
+
+                if (cart.length === 0) {
+                    cartItemsContainer.innerHTML = '';
+                    emptyCartMessage.style.display = 'block';
+                } else {
+                    emptyCartMessage.style.display = 'none';
+                    cartItemsContainer.innerHTML = cart.map(cartItem => {
+                        const menuItem = menuData.find(item => item.id === cartItem.id);
+                        const offer = specialOffers.find(o => o.id === cartItem.id);
+                        const price = offer ? offer.specialPrice : menuItem.price;
+                        return `
+                            <div class="flex items-center justify-between py-3 border-b cart-item-enter">
+                                <div>
+                                    <p class="font-semibold">${menuItem.name}</p>
+                                    <p class="text-sm text-gray-500">${formatCurrency(price)}</p>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <button class="cart-quantity-btn p-1 rounded-full w-6 h-6 flex items-center justify-center bg-gray-200 hover:bg-gray-300" data-id="${cartItem.id}" data-change="-1">-</button>
+                                    <span>${cartItem.quantity}</span>
+                                    <button class="cart-quantity-btn p-1 rounded-full w-6 h-6 flex items-center justify-center bg-gray-200 hover:bg-gray-300" data-id="${cartItem.id}" data-change="1">+</button>
+                                    <button class="remove-from-cart-btn text-red-500 hover:text-red-700" data-id="${cartItem.id}"><i class="fas fa-trash-alt"></i></button>
                                 </div>
                             </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `).join('') : '<p class="text-center text-gray-500">The menu is currently empty. The owner is updating it!</p>';
-        };
-
-        const renderSpecialOffers = () => {
-            if (specialOffers.length === 0) {
-                specialOffersContainer.innerHTML = '<p class="text-gray-500 md:col-span-2 lg:col-span-3">No special offers at the moment. Check back soon!</p>';
-                document.getElementById('special-offers-section').style.display = 'none';
-                return;
-            }
-            document.getElementById('special-offers-section').style.display = 'block';
-            specialOffersContainer.innerHTML = specialOffers.map(offer => {
-                const originalItem = menuData.find(item => item.id === offer.id);
-                if (!originalItem) return '';
-                return `
-                    <div class="bg-white border-2 border-haber-yellow rounded-lg shadow-lg overflow-hidden transform hover:scale-105 transition-transform duration-300 flex flex-col">
-                        <div class="p-6 flex-grow">
-                            <h4 class="text-xl font-bold text-haber-red mb-2">${originalItem.name}</h4>
-                            <p class="text-gray-600 mb-4 text-sm">${originalItem.description || ''}</p>
-                        </div>
-                        <div class="p-6 bg-yellow-50 flex justify-between items-center">
-                            <div>
-                                <span class="text-lg font-bold text-haber-red mr-2">${formatCurrency(offer.specialPrice)}</span>
-                                <span class="text-sm text-gray-500 line-through">${formatCurrency(originalItem.price)}</span>
-                            </div>
-                            <button data-id="${originalItem.id}" data-price="${offer.specialPrice}" class="add-to-cart-btn bg-haber-yellow text-gray-800 px-4 py-2 rounded-lg font-bold hover:bg-amber-400 transition-colors">Add</button>
-                        </div>
-                    </div>
-                `
-            }).join('');
-        };
-
-        const renderCart = () => {
-            cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
-            checkoutButton.disabled = cart.length === 0;
-
-            if (cart.length === 0) {
-                cartItemsContainer.innerHTML = '';
-                emptyCartMessage.style.display = 'block';
-            } else {
-                emptyCartMessage.style.display = 'none';
-                cartItemsContainer.innerHTML = cart.map(cartItem => {
+                        `;
+                    }).join('');
+                }
+                
+                const total = cart.reduce((sum, cartItem) => {
                     const menuItem = menuData.find(item => item.id === cartItem.id);
                     const offer = specialOffers.find(o => o.id === cartItem.id);
                     const price = offer ? offer.specialPrice : menuItem.price;
-                    return `
-                        <div class="flex items-center justify-between py-3 border-b cart-item-enter">
-                            <div>
-                                <p class="font-semibold">${menuItem.name}</p>
-                                <p class="text-sm text-gray-500">${formatCurrency(price)}</p>
-                            </div>
-                            <div class="flex items-center space-x-3">
-                                <button class="cart-quantity-btn p-1 rounded-full w-6 h-6 flex items-center justify-center bg-gray-200 hover:bg-gray-300" data-id="${cartItem.id}" data-change="-1">-</button>
-                                <span>${cartItem.quantity}</span>
-                                <button class="cart-quantity-btn p-1 rounded-full w-6 h-6 flex items-center justify-center bg-gray-200 hover:bg-gray-300" data-id="${cartItem.id}" data-change="1">+</button>
-                                <button class="remove-from-cart-btn text-red-500 hover:text-red-700" data-id="${cartItem.id}"><i class="fas fa-trash-alt"></i></button>
-                            </div>
+                    return sum + (price * cartItem.quantity);
+                }, 0);
+                cartTotalEl.textContent = formatCurrency(total);
+            };
+
+            const addToCart = (itemId) => {
+                const existingItem = cart.find(item => item.id === itemId);
+                if (existingItem) {
+                    existingItem.quantity++;
+                } else {
+                    cart.push({ id: itemId, quantity: 1 });
+                }
+                renderCart();
+            };
+
+            const updateCartQuantity = (itemId, change) => {
+                const cartItem = cart.find(item => item.id === itemId);
+                if (cartItem) {
+                    cartItem.quantity += change;
+                    if (cartItem.quantity <= 0) {
+                        cart = cart.filter(item => item.id !== itemId);
+                    }
+                }
+                renderCart();
+            };
+
+            const removeFromCart = (itemId) => {
+                cart = cart.filter(item => item.id !== itemId);
+                renderCart();
+            };
+
+            const renderAdminCategories = () => {
+                const categories = [...new Set(menuData.map(item => item.category))];
+                adminCategoriesList.innerHTML = categories.map(cat => `
+                    <div class="flex justify-between items-center p-2 rounded-lg bg-gray-50 hover:bg-gray-100">
+                        <span class="font-semibold text-gray-700">${cat}</span>
+                        <button class="delete-category-btn text-red-500 hover:text-red-700 p-2 rounded-md bg-red-100 hover:bg-red-200" data-category="${cat}" title="Delete Category">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `).join('');
+            };
+
+            const renderAdminMenuItems = () => {
+                adminMenuItemsContainer.innerHTML = menuData.map(item => `
+                    <div class="flex justify-between items-center p-2 border rounded-lg bg-gray-50 hover:bg-gray-100">
+                        <div>
+                            <p class="font-semibold">${item.name} <span class="text-sm text-gray-500">(${item.category})</span></p>
+                            <p class="text-sm text-green-600 font-bold">${formatCurrency(item.price)}</p>
                         </div>
-                    `;
-                }).join('');
-            }
+                        <div class="flex space-x-2">
+                            <button class="edit-item-btn text-blue-500 hover:text-blue-700 p-2 rounded-md bg-blue-100 hover:bg-blue-200" data-id="${item.id}" title="Edit"><i class="fas fa-edit"></i></button>
+                            <button class="delete-item-btn text-red-500 hover:text-red-700 p-2 rounded-md bg-red-100 hover:bg-red-200" data-id="${item.id}" title="Delete"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                `).join('');
+            };
+
+            const renderAdminSpecialOffers = () => {
+                adminSpecialOffersContainer.innerHTML = specialOffers.length === 0 
+                ? '<p class="text-center text-gray-500 p-4">No active offers.</p>'
+                : specialOffers.map(offer => {
+                    const originalItem = menuData.find(item => item.id === offer.id);
+                    if (!originalItem) return '';
+                    return `
+                    <div class="flex justify-between items-center p-2 border border-haber-yellow rounded-lg bg-yellow-50 hover:bg-yellow-100">
+                        <div>
+                            <p class="font-semibold">${originalItem.name}</p>
+                            <p class="text-sm"><span class="font-bold text-haber-red">${formatCurrency(offer.specialPrice)}</span> <span class="text-gray-500 line-through ml-1">${formatCurrency(originalItem.price)}</span></p>
+                        </div>
+                        <button class="delete-offer-btn text-red-500 hover:text-red-700 p-2 rounded-md bg-red-100 hover:bg-red-200" data-id="${offer.id}" title="Remove Offer"><i class="fas fa-trash"></i></button>
+                    </div>
+                `}).join('');
+            };
             
-            const total = cart.reduce((sum, cartItem) => {
-                const menuItem = menuData.find(item => item.id === cartItem.id);
-                const offer = specialOffers.find(o => o.id === cartItem.id);
-                const price = offer ? offer.specialPrice : menuItem.price;
-                return sum + (price * cartItem.quantity);
-            }, 0);
-            cartTotalEl.textContent = formatCurrency(total);
-        };
+            const populateOfferSelect = () => {
+                offerItemSelect.innerHTML = '<option value="" disabled selected>Select an item to discount...</option>' + menuData.map(item => `<option value="${item.id}">${item.name}</option>`).join('');
+            };
 
-        const addToCart = (itemId) => {
-            const existingItem = cart.find(item => item.id === itemId);
-            if (existingItem) {
-                existingItem.quantity++;
-            } else {
-                cart.push({ id: itemId, quantity: 1 });
-            }
-            renderCart();
-        };
+            const clearItemForm = () => {
+                itemForm.reset();
+                itemIdInput.value = '';
+            };
 
-        const updateCartQuantity = (itemId, change) => {
-            const cartItem = cart.find(item => item.id === itemId);
-            if (cartItem) {
-                cartItem.quantity += change;
-                if (cartItem.quantity <= 0) {
-                    cart = cart.filter(item => item.id !== itemId);
+            const saveMenuItem = async (e) => {
+                e.preventDefault();
+                if (!db) { showAlert("Database not connected. Changes will not be saved."); return; }
+                const id = itemIdInput.value ? parseInt(itemIdInput.value) : null;
+                const name = itemNameInput.value.trim();
+                const price = parseFloat(itemPriceInput.value);
+                const category = itemCategoryInput.value.trim();
+                const description = itemDescriptionInput.value.trim();
+
+                if (!name || isNaN(price) || !category) {
+                    showAlert('Please fill all required fields correctly.');
+                    return;
                 }
-            }
-            renderCart();
-        };
 
-        const removeFromCart = (itemId) => {
-            cart = cart.filter(item => item.id !== itemId);
-            renderCart();
-        };
-
-        const renderAdminCategories = () => {
-            const categories = [...new Set(menuData.map(item => item.category))];
-            adminCategoriesList.innerHTML = categories.map(cat => `
-                <div class="flex justify-between items-center p-2 rounded-lg bg-gray-50 hover:bg-gray-100">
-                    <span class="font-semibold text-gray-700">${cat}</span>
-                    <button class="delete-category-btn text-red-500 hover:text-red-700 p-2 rounded-md bg-red-100 hover:bg-red-200" data-category="${cat}" title="Delete Category">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            `).join('');
-        };
-
-        const renderAdminMenuItems = () => {
-            adminMenuItemsContainer.innerHTML = menuData.map(item => `
-                <div class="flex justify-between items-center p-2 border rounded-lg bg-gray-50 hover:bg-gray-100">
-                    <div>
-                        <p class="font-semibold">${item.name} <span class="text-sm text-gray-500">(${item.category})</span></p>
-                        <p class="text-sm text-green-600 font-bold">${formatCurrency(item.price)}</p>
-                    </div>
-                    <div class="flex space-x-2">
-                        <button class="edit-item-btn text-blue-500 hover:text-blue-700 p-2 rounded-md bg-blue-100 hover:bg-blue-200" data-id="${item.id}" title="Edit"><i class="fas fa-edit"></i></button>
-                        <button class="delete-item-btn text-red-500 hover:text-red-700 p-2 rounded-md bg-red-100 hover:bg-red-200" data-id="${item.id}" title="Delete"><i class="fas fa-trash"></i></button>
-                    </div>
-                </div>
-            `).join('');
-        };
-
-        const renderAdminSpecialOffers = () => {
-            adminSpecialOffersContainer.innerHTML = specialOffers.length === 0 
-            ? '<p class="text-center text-gray-500 p-4">No active offers.</p>'
-            : specialOffers.map(offer => {
-                 const originalItem = menuData.find(item => item.id === offer.id);
-                 if (!originalItem) return '';
-                return `
-                <div class="flex justify-between items-center p-2 border border-haber-yellow rounded-lg bg-yellow-50 hover:bg-yellow-100">
-                    <div>
-                        <p class="font-semibold">${originalItem.name}</p>
-                        <p class="text-sm"><span class="font-bold text-haber-red">${formatCurrency(offer.specialPrice)}</span> <span class="text-gray-500 line-through ml-1">${formatCurrency(originalItem.price)}</span></p>
-                    </div>
-                    <button class="delete-offer-btn text-red-500 hover:text-red-700 p-2 rounded-md bg-red-100 hover:bg-red-200" data-id="${offer.id}" title="Remove Offer"><i class="fas fa-trash"></i></button>
-                </div>
-            `}).join('');
-        };
-        
-        const populateOfferSelect = () => {
-            offerItemSelect.innerHTML = '<option value="" disabled selected>Select an item to discount...</option>' + menuData.map(item => `<option value="${item.id}">${item.name}</option>`).join('');
-        };
-
-        const clearItemForm = () => {
-            itemForm.reset();
-            itemIdInput.value = '';
-        };
-
-        const saveMenuItem = (e) => {
-            e.preventDefault();
-            const id = itemIdInput.value ? parseInt(itemIdInput.value) : null;
-            const name = itemNameInput.value.trim();
-            const price = parseFloat(itemPriceInput.value);
-            const category = itemCategoryInput.value.trim();
-            const description = itemDescriptionInput.value.trim();
-
-            if (!name || isNaN(price) || !category) {
-                showAlert('Please fill all required fields correctly.');
-                return;
-            }
-
-            if (id) {
-                const itemIndex = menuData.findIndex(item => item.id === id);
-                if (itemIndex > -1) {
-                    menuData[itemIndex] = { ...menuData[itemIndex], name, price, category, description };
+                let updatedMenuData = [...menuData];
+                if (id) {
+                    const itemIndex = updatedMenuData.findIndex(item => item.id === id);
+                    if (itemIndex > -1) {
+                        updatedMenuData[itemIndex] = { ...updatedMenuData[itemIndex], name, price, category, description };
+                    }
+                } else {
+                    const newId = updatedMenuData.length > 0 ? Math.max(...updatedMenuData.map(i => i.id)) + 1 : 1;
+                    updatedMenuData.push({ id: newId, name, price, category, description });
                 }
-            } else {
-                const newId = menuData.length > 0 ? Math.max(...menuData.map(i => i.id)) + 1 : 1;
-                menuData.push({ id: newId, name, price, category, description });
-            }
+                
+                await setDoc(menuDocRef, { items: updatedMenuData });
+                clearItemForm();
+            };
             
-            saveData(); 
-            clearItemForm();
-            refreshAll();
-        };
-        
-        const editItem = (id) => {
-            const item = menuData.find(i => i.id === id);
-            itemIdInput.value = item.id;
-            itemNameInput.value = item.name;
-            itemPriceInput.value = item.price;
-            itemCategoryInput.value = item.category;
-            itemDescriptionInput.value = item.description || '';
-            itemNameInput.focus();
-        };
+            const editItem = (id) => {
+                const item = menuData.find(i => i.id === id);
+                itemIdInput.value = item.id;
+                itemNameInput.value = item.name;
+                itemPriceInput.value = item.price;
+                itemCategoryInput.value = item.category;
+                itemDescriptionInput.value = item.description || '';
+                itemNameInput.focus();
+            };
 
-        const deleteItem = (id) => {
-            if (confirm('Are you sure you want to delete this item? This will also remove it from any special offers.')) {
-                menuData = menuData.filter(i => i.id !== id);
-                specialOffers = specialOffers.filter(o => o.id !== id);
-                saveData(); 
-                refreshAll();
-            }
-        };
-        
-        const deleteCategory = (categoryName) => {
-            if (confirm(`Are you sure you want to delete the "${categoryName}" category? ALL items within it will be permanently removed.`)) {
-                const itemIdsToDelete = new Set(menuData.filter(item => item.category === categoryName).map(item => item.id));
-                menuData = menuData.filter(item => item.category !== categoryName);
-                specialOffers = specialOffers.filter(offer => !itemIdsToDelete.has(offer.id));
-                saveData(); 
-                refreshAll();
-            }
-        };
-
-        const addSpecialOffer = (e) => {
-            e.preventDefault();
-            const itemId = parseInt(offerItemSelect.value);
-            const specialPrice = parseFloat(offerPriceInput.value);
-
-            if (!itemId || isNaN(specialPrice)) {
-                showAlert('Please select an item and set a valid special price.');
-                return;
-            }
+            const deleteItem = async (id) => {
+                if (!db) { showAlert("Database not connected. Changes will not be saved."); return; }
+                if (confirm('Are you sure you want to delete this item? This will also remove it from any special offers.')) {
+                    const updatedMenuData = menuData.filter(i => i.id !== id);
+                    const updatedSpecialOffers = specialOffers.filter(o => o.id !== id);
+                    await setDoc(menuDocRef, { items: updatedMenuData });
+                    await setDoc(offersDocRef, { items: updatedSpecialOffers });
+                }
+            };
             
-            if (specialOffers.some(o => o.id === itemId)) {
-                showAlert('This item is already in special offers. Remove it first to add a new price.');
-                return;
+            const deleteCategory = async (categoryName) => {
+                if (!db) { showAlert("Database not connected. Changes will not be saved."); return; }
+                if (confirm(`Are you sure you want to delete the "${categoryName}" category? ALL items within it will be permanently removed.`)) {
+                    const itemIdsToDelete = new Set(menuData.filter(item => item.category === categoryName).map(item => item.id));
+                    const updatedMenuData = menuData.filter(item => item.category !== categoryName);
+                    const updatedSpecialOffers = specialOffers.filter(offer => !itemIdsToDelete.has(offer.id));
+                    await setDoc(menuDocRef, { items: updatedMenuData });
+                    await setDoc(offersDocRef, { items: updatedSpecialOffers });
+                }
+            };
+
+            const addSpecialOffer = async (e) => {
+                e.preventDefault();
+                if (!db) { showAlert("Database not connected. Changes will not be saved."); return; }
+                const itemId = parseInt(offerItemSelect.value);
+                const specialPrice = parseFloat(offerPriceInput.value);
+
+                if (!itemId || isNaN(specialPrice)) {
+                    showAlert('Please select an item and set a valid special price.');
+                    return;
+                }
+                
+                if (specialOffers.some(o => o.id === itemId)) {
+                    showAlert('This item is already in special offers. Remove it first to add a new price.');
+                    return;
+                }
+
+                const updatedSpecialOffers = [...specialOffers, { id: itemId, specialPrice }];
+                await setDoc(offersDocRef, { items: updatedSpecialOffers });
+                offerForm.reset();
+            };
+            
+            const deleteOffer = async (id) => {
+                if (!db) { showAlert("Database not connected. Changes will not be saved."); return; }
+                const updatedSpecialOffers = specialOffers.filter(o => o.id !== id);
+                await setDoc(offersDocRef, { items: updatedSpecialOffers });
+            };
+            
+            const handleCheckout = (e) => {
+                e.preventDefault();
+                const name = customerNameInput.value.trim();
+                const phone = customerPhoneInput.value.trim();
+                const location = customerLocationInput.value.trim();
+
+                if (!name || !phone || !location) {
+                    showAlert('Please fill in all your details.');
+                    return;
+                }
+
+                let orderDetailsText = `*New Order from Haber Chicken Website*\n\n*Customer:* ${name}\n*Phone:* ${phone}\n*Location:* ${location}\n\n*Order Details:*\n`;
+                let total = 0;
+                cart.forEach(cartItem => {
+                    const menuItem = menuData.find(item => item.id === cartItem.id);
+                    const offer = specialOffers.find(o => o.id === cartItem.id);
+                    const price = offer ? offer.specialPrice : menuItem.price;
+                    total += price * cartItem.quantity;
+                    orderDetailsText += `- ${cartItem.quantity}x ${menuItem.name} (${formatCurrency(price * cartItem.quantity)})\n`;
+                });
+                orderDetailsText += `\n*Total: ${formatCurrency(total)}*`;
+
+                const encodedMessage = encodeURIComponent(orderDetailsText);
+                const whatsappUrl = `https://wa.me/${SHOP_WHATSAPP_NUMBER}?text=${encodedMessage}`;
+                window.open(whatsappUrl, '_blank');
+                
+                showAlert('You will be redirected to WhatsApp. Please press send to confirm your order!');
+                cart = [];
+                checkoutForm.reset();
+                renderCart();
+                closeModal(checkoutModal);
+                if (cartSidebar.classList.contains('translate-x-0')) {
+                    toggleCartSidebar();
+                }
+            };
+
+            const refreshAll = () => {
+                renderMenu();
+                renderSpecialOffers();
+                renderCart();
+                renderAdminCategories();
+                renderAdminMenuItems();
+                renderAdminSpecialOffers();
+                populateOfferSelect();
+            };
+
+            const toggleCartSidebar = () => {
+                cartSidebar.classList.toggle('translate-x-full');
+                cartBackdrop.classList.toggle('hidden');
+            };
+
+            // --- INITIALIZATION & EVENT LISTENERS ---
+
+            try {
+                const firebaseConfig = {
+                    apiKey: "AIzaSyAVI2Pr17IpIO89O_dQ6HIIZiEY_IicYhE",
+                    authDomain: "haberchickenmenu.firebaseapp.com",
+                    projectId: "haberchickenmenu",
+                    storageBucket: "haberchickenmenu.firebasestorage.app",
+                    messagingSenderId: "556537738142",
+                    appId: "1:556537738142:web:786c5c0aadedc858aa1c8f",
+                    measurementId: "G-4XGDLFV7XN"
+                };
+
+                const app = initializeApp(firebaseConfig);
+                const auth = getAuth(app);
+                db = getFirestore(app);
+
+                await signInAnonymously(auth);
+                
+                onAuthStateChanged(auth, user => {
+                    if (user) {
+                        const appId = firebaseConfig.projectId;
+                        // ** FIX: Corrected the Firestore document path to have an even number of segments.
+                        menuDocRef = doc(db, "artifacts", appId, "public_data", "menu");
+                        offersDocRef = doc(db, "artifacts", appId, "public_data", "offers");
+                        loadDataFromFirestore();
+                    }
+                });
+            } catch (error) {
+                console.error("Firebase initialization failed:", error);
+                showAlert("Could not connect to the cloud database. Please check your Firebase setup (Anonymous Sign-in must be enabled). Displaying local data only.");
+                loadLocalData();
             }
 
-            specialOffers.push({ id: itemId, specialPrice });
-            saveData(); 
-            offerForm.reset();
-            refreshAll();
-        };
-        
-        const deleteOffer = (id) => {
-             specialOffers = specialOffers.filter(o => o.id !== id);
-             saveData(); 
-             refreshAll();
-        };
-        
-        const handleCheckout = (e) => {
-            e.preventDefault();
-            const name = customerNameInput.value.trim();
-            const phone = customerPhoneInput.value.trim();
-            const location = customerLocationInput.value.trim();
-
-            if (!name || !phone || !location) {
-                showAlert('Please fill in all your details.');
-                return;
-            }
-
-            let orderDetailsText = `*New Order from Haber Chicken Website*\n\n*Customer:* ${name}\n*Phone:* ${phone}\n*Location:* ${location}\n\n*Order Details:*\n`;
-            let total = 0;
-            cart.forEach(cartItem => {
-                const menuItem = menuData.find(item => item.id === cartItem.id);
-                const offer = specialOffers.find(o => o.id === cartItem.id);
-                const price = offer ? offer.specialPrice : menuItem.price;
-                total += price * cartItem.quantity;
-                orderDetailsText += `- ${cartItem.quantity}x ${menuItem.name} (${formatCurrency(price * cartItem.quantity)})\n`;
+            // Attach all event listeners
+            cartButton.addEventListener('click', toggleCartSidebar);
+            closeCartButton.addEventListener('click', toggleCartSidebar);
+            cartBackdrop.addEventListener('click', toggleCartSidebar);
+            
+            document.body.addEventListener('click', (e) => {
+                const btn = e.target.closest('.add-to-cart-btn');
+                if (btn) {
+                    const id = parseInt(btn.dataset.id);
+                    addToCart(id);
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = 'Added!';
+                    btn.classList.add('bg-green-500');
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.classList.remove('bg-green-500');
+                    }, 1000);
+                }
             });
-            orderDetailsText += `\n*Total: ${formatCurrency(total)}*`;
-
-            const encodedMessage = encodeURIComponent(orderDetailsText);
-            const whatsappUrl = `https://wa.me/${SHOP_WHATSAPP_NUMBER}?text=${encodedMessage}`;
-            window.open(whatsappUrl, '_blank');
             
-            showAlert('You will be redirected to WhatsApp. Please press send to confirm your order!');
-            cart = [];
-            checkoutForm.reset();
-            renderCart();
-            closeModal(checkoutModal);
-            if (cartSidebar.classList.contains('translate-x-0')) {
-                toggleCartSidebar();
-            }
-        };
+            cartItemsContainer.addEventListener('click', (e) => {
+                const quantityBtn = e.target.closest('.cart-quantity-btn');
+                const removeBtn = e.target.closest('.remove-from-cart-btn');
+                if (quantityBtn) {
+                    const id = parseInt(quantityBtn.dataset.id);
+                    const change = parseInt(quantityBtn.dataset.change);
+                    updateCartQuantity(id, change);
+                }
+                if (removeBtn) {
+                    const id = parseInt(removeBtn.dataset.id);
+                    removeFromCart(id);
+                }
+            });
+            
+            logoContainer.addEventListener('click', () => openModal(adminLoginModal));
+            cancelLoginButton.addEventListener('click', () => closeModal(adminLoginModal));
+            submitLoginButton.addEventListener('click', () => {
+                if (adminPasswordInput.value === 'eliasrabih123') {
+                    closeModal(adminLoginModal);
+                    openModal(adminDashboardModal);
+                    adminPasswordInput.value = '';
+                } else {
+                    showAlert('Incorrect password.');
+                    adminPasswordInput.value = '';
+                }
+            });
+            
+            closeDashboardButton.addEventListener('click', () => closeModal(adminDashboardModal));
+            itemForm.addEventListener('submit', saveMenuItem);
+            clearFormButton.addEventListener('click', clearItemForm);
+            
+            adminMenuItemsContainer.addEventListener('click', (e) => {
+                const editBtn = e.target.closest('.edit-item-btn');
+                const deleteBtn = e.target.closest('.delete-item-btn');
+                if (editBtn) {
+                    editItem(parseInt(editBtn.dataset.id));
+                }
+                if (deleteBtn) {
+                    deleteItem(parseInt(deleteBtn.dataset.id));
+                }
+            });
 
-        const refreshAll = () => {
-            renderMenu();
-            renderSpecialOffers();
-            renderCart();
-            renderAdminCategories();
-            renderAdminMenuItems();
-            renderAdminSpecialOffers();
-            populateOfferSelect();
-        };
+            adminCategoriesList.addEventListener('click', (e) => {
+                const deleteBtn = e.target.closest('.delete-category-btn');
+                if (deleteBtn) {
+                    const category = deleteBtn.dataset.category;
+                    deleteCategory(category);
+                }
+            });
+            
+            offerForm.addEventListener('submit', addSpecialOffer);
+            adminSpecialOffersContainer.addEventListener('click', (e) => {
+                const deleteBtn = e.target.closest('.delete-offer-btn');
+                if(deleteBtn) {
+                    deleteOffer(parseInt(deleteBtn.dataset.id));
+                }
+            });
 
-        const toggleCartSidebar = () => {
-            cartSidebar.classList.toggle('translate-x-full');
-            cartBackdrop.classList.toggle('hidden');
-        };
+            checkoutButton.addEventListener('click', () => {
+                if (cart.length > 0) {
+                    openModal(checkoutModal);
+                }
+            });
+            cancelCheckoutButton.addEventListener('click', () => closeModal(checkoutModal));
+            checkoutForm.addEventListener('submit', handleCheckout);
 
-        // --- EVENT LISTENERS ---
-        cartButton.addEventListener('click', toggleCartSidebar);
-        closeCartButton.addEventListener('click', toggleCartSidebar);
-        cartBackdrop.addEventListener('click', toggleCartSidebar);
-        
-        document.body.addEventListener('click', (e) => {
-            const btn = e.target.closest('.add-to-cart-btn');
-            if (btn) {
-                const id = parseInt(btn.dataset.id);
-                addToCart(id);
-                // Visual feedback for adding to cart
-                const originalText = btn.innerHTML;
-                btn.innerHTML = 'Added!';
-                btn.classList.add('bg-green-500');
-                setTimeout(() => {
-                    btn.innerHTML = originalText;
-                    btn.classList.remove('bg-green-500');
-                }, 1000);
-            }
+            alertOkButton.addEventListener('click', () => closeModal(alertModal));
+            
         });
-        
-        cartItemsContainer.addEventListener('click', (e) => {
-            const quantityBtn = e.target.closest('.cart-quantity-btn');
-            const removeBtn = e.target.closest('.remove-from-cart-btn');
-            if (quantityBtn) {
-                const id = parseInt(quantityBtn.dataset.id);
-                const change = parseInt(quantityBtn.dataset.change);
-                updateCartQuantity(id, change);
-            }
-            if (removeBtn) {
-                const id = parseInt(removeBtn.dataset.id);
-                removeFromCart(id);
-            }
-        });
-        
-        logoContainer.addEventListener('click', () => openModal(adminLoginModal));
-        cancelLoginButton.addEventListener('click', () => closeModal(adminLoginModal));
-        submitLoginButton.addEventListener('click', () => {
-            if (adminPasswordInput.value === 'eliasrabih123') {
-                closeModal(adminLoginModal);
-                openModal(adminDashboardModal);
-                adminPasswordInput.value = '';
-            } else {
-                showAlert('Incorrect password.');
-                adminPasswordInput.value = '';
-            }
-        });
-        
-        closeDashboardButton.addEventListener('click', () => closeModal(adminDashboardModal));
-        itemForm.addEventListener('submit', saveMenuItem);
-        clearFormButton.addEventListener('click', clearItemForm);
-        
-        adminMenuItemsContainer.addEventListener('click', (e) => {
-            const editBtn = e.target.closest('.edit-item-btn');
-            const deleteBtn = e.target.closest('.delete-item-btn');
-            if (editBtn) {
-                editItem(parseInt(editBtn.dataset.id));
-            }
-            if (deleteBtn) {
-                deleteItem(parseInt(deleteBtn.dataset.id));
-            }
-        });
-
-        adminCategoriesList.addEventListener('click', (e) => {
-            const deleteBtn = e.target.closest('.delete-category-btn');
-            if (deleteBtn) {
-                const category = deleteBtn.dataset.category;
-                deleteCategory(category);
-            }
-        });
-        
-        offerForm.addEventListener('submit', addSpecialOffer);
-        adminSpecialOffersContainer.addEventListener('click', (e) => {
-             const deleteBtn = e.target.closest('.delete-offer-btn');
-             if(deleteBtn) {
-                 deleteOffer(parseInt(deleteBtn.dataset.id));
-             }
-        });
-
-        checkoutButton.addEventListener('click', () => {
-            if (cart.length > 0) {
-                openModal(checkoutModal);
-            }
-        });
-        cancelCheckoutButton.addEventListener('click', () => closeModal(checkoutModal));
-        checkoutForm.addEventListener('submit', handleCheckout);
-
-        alertOkButton.addEventListener('click', () => closeModal(alertModal));
-        
-        // --- INITIALIZATION ---
-        loadData();
-        refreshAll();
-    });
     </script>
 </body>
 </html>
-
