@@ -71,7 +71,7 @@
                      <div class="w-24 h-auto">
                         <!-- Make sure you have this image file in the same directory -->
                         <img src="haberchickenlogo.jpg" alt="Haber Chicken Logo" class="w-full h-auto" onerror="this.style.display='none'">
-                        <span class="text-xl font-bold text-haber-red">Haber Chicken</span>
+                        <!--span class="text-xl font-bold text-haber-red">Haber Chicken</span-->
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
@@ -119,6 +119,7 @@
             <div class="flex justify-between items-center font-bold text-lg mb-4">
                 <span>Total:</span>
                 <span id="cart-total">0 L.L.</span>
+                <span>+ Delivery</span>
             </div>
             <button id="checkout-button" class="w-full bg-haber-red text-white py-3 rounded-lg font-bold hover:bg-red-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center space-x-2">
                 <i class="fab fa-whatsapp"></i>
@@ -638,7 +639,7 @@
                     total += price * cartItem.quantity;
                     orderDetailsText += `- ${cartItem.quantity}x ${menuItem.name} (${formatCurrency(price * cartItem.quantity)})\n`;
                 });
-                orderDetailsText += `\n*Total: ${formatCurrency(total)}*`;
+                orderDetailsText += `\n*Total: ${formatCurrency(total)}* + Delivery Fee`;
 
                 const encodedMessage = encodeURIComponent(orderDetailsText);
                 const whatsappUrl = `https://wa.me/${SHOP_WHATSAPP_NUMBER}?text=${encodedMessage}`;
